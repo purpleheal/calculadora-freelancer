@@ -197,14 +197,41 @@
           <span class="card__title"><span class="card__title-icon">⚙️</span> Configuración</span>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Modalidad</label>
-            <select class="form-select" id="selectModalidad">
-              <option value="freelance">Freelance (80 hs/mes facturables)</option>
-              <option value="empleado">Relación de dependencia (160 hs/mes)</option>
-            </select>
+        <!-- Jornada Laboral -->
+        <div class="work-schedule-section">
+          <div class="work-schedule-header">
+            <span class="work-schedule-header__icon">🕐</span>
+            <span class="work-schedule-header__title">Tu Jornada Laboral</span>
           </div>
+          <div class="form-row">
+            <div class="form-group">
+              <div class="slider-container">
+                <div class="slider-header">
+                  <label class="form-label" style="margin:0">Horas por día</label>
+                  <span class="slider-value slider-value--clickable" id="valHorasDia">4 hs</span>
+                </div>
+                <input type="range" min="1" max="12" step="0.5" value="4" id="sliderHorasDia">
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="slider-container">
+                <div class="slider-header">
+                  <label class="form-label" style="margin:0">Días laborales / mes</label>
+                  <span class="slider-value slider-value--clickable" id="valDiasMes">20 días</span>
+                </div>
+                <input type="range" min="5" max="30" step="1" value="20" id="sliderDiasMes">
+              </div>
+            </div>
+          </div>
+          <div class="work-total-hours" id="workTotalHours">
+            <span class="work-total-hours__icon">⏱️</span>
+            <span class="work-total-hours__text">Total: <strong id="totalHorasDisplay">80</strong> horas facturables / mes</span>
+          </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <div class="form-row" style="grid-template-columns: 1fr;">
           <div class="form-group">
             <label class="form-label">Tipo de dólar para conversiones</label>
             <select class="form-select" id="selectTipoDolar">

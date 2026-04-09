@@ -674,6 +674,65 @@ input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.2);
 }
 
+/* --- Work Schedule Section --- */
+.work-schedule-section {
+  background: rgba(99, 102, 241, 0.05);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.work-schedule-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.work-schedule-header__icon {
+  font-size: 1.1rem;
+}
+
+.work-schedule-header__title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-indigo-light);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.work-total-hours {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  margin-top: 0.75rem;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-base);
+}
+
+.work-total-hours__icon {
+  font-size: 1rem;
+}
+
+.work-total-hours__text {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.work-total-hours__text strong {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--accent-indigo-light);
+  text-shadow: 0 0 8px rgba(99, 102, 241, 0.3);
+}
+
 /* --- Results Sidebar --- */
 .results-panel {
   position: sticky;

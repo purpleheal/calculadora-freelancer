@@ -41,7 +41,8 @@ const state = {
   ],
 
   // Config
-  modalidad: 'freelance',
+  horasDia: 4,
+  diasMes: 20,
   tipoDolar: 'mep',
   pctImprevistos: 15,
   pctIIBB: 3.5,
@@ -464,10 +465,10 @@ function recalculate() {
     totalPersonal += toARS(item.amount, item.currency);
   });
 
-  // 3. Habits (daily * 20 workdays)
+  // 3. Habits (daily * workdays)
   let totalHabitos = 0;
   state.habitos.forEach(item => {
-    totalHabitos += item.amount * 20;
+    totalHabitos += item.amount * state.diasMes;
   });
 
   // 4. Amortization
@@ -520,7 +521,7 @@ function recalculate() {
   const metaMensual = basePreTax + monoCuota + iibb;
 
   // 12. Hourly rate
-  const horasMes = state.modalidad === 'freelance' ? 80 : 160;
+  const horasMes = state.horasDia * state.diasMes;
   const precioHora = metaMensual / horasMes;
   const precioHoraUSD = precioHora / dolar;
 
@@ -599,6 +600,14 @@ function recalculate() {
     }
   }
 
+  // Update total hours display
+  const totalHorasEl = document.getElementById('totalHorasDisplay');
+  if (totalHorasEl) totalHorasEl.textContent = horasMes;
+
+  // Update habit badge
+  const habitBadge = document.querySelector('#cardHabitos .card__badge');
+  if (habitBadge) habitBadge.textContent = `x${state.diasMes} d\u00edas`;
+
   // Inflation projection chart (12 months)
   renderProjectionChart(precioHora);
 
@@ -668,9 +677,19 @@ function renderAll() {
 // ===================== CONFIG BINDINGS =====================
 
 function bindControls() {
-  // Modalidad
-  document.getElementById('selectModalidad').addEventListener('change', (e) => {
-    state.modalidad = e.target.value;
+  // Horas por día slider
+  document.getElementById('sliderHorasDia').addEventListener('input', (e) => {
+    state.horasDia = parseFloat(e.target.value);
+    const valEl = document.getElementById('valHorasDia');
+    if (valEl) valEl.textContent = `${state.horasDia} hs`;
+    recalculate();
+  });
+
+  // Días laborales por mes slider
+  document.getElementById('sliderDiasMes').addEventListener('input', (e) => {
+    state.diasMes = parseInt(e.target.value);
+    const valEl = document.getElementById('valDiasMes');
+    if (valEl) valEl.textContent = `${state.diasMes} d\u00edas`;
     recalculate();
   });
 
@@ -747,6 +766,8 @@ function bindControls() {
     });
   });
 
+  makeValueClickable('sliderHorasDia', 'valHorasDia', 'horasDia', ' hs');
+  makeValueClickable('sliderDiasMes', 'valDiasMes', 'diasMes', ' días');
   makeValueClickable('sliderImprevistos', 'valImprevistos', 'pctImprevistos', '%');
   makeValueClickable('sliderIIBB', 'valIIBB', 'pctIIBB', '%');
   makeValueClickable('sliderValorAgregado', 'valValorAgregado', 'pctValorAgregado', '%');
@@ -813,7 +834,9 @@ function exportCSV() {
   lines.push(['CONFIG', 'Imprevistos', state.pctImprevistos + '%']);
   lines.push(['CONFIG', 'IIBB', state.pctIIBB + '%']);
   lines.push(['CONFIG', 'Valor Agregado', state.pctValorAgregado + '%']);
-  lines.push(['CONFIG', 'Modalidad', state.modalidad]);
+  lines.push(['CONFIG', 'Horas/día', state.horasDia]);
+  lines.push(['CONFIG', 'Días/mes', state.diasMes]);
+  lines.push(['CONFIG', 'Total hs/mes', state.horasDia * state.diasMes]);
 
   const hourlyEl = document.getElementById('resultHourlyRate').textContent;
   const metaEl = document.getElementById('resultMetaMensual').textContent;
@@ -842,7 +865,8 @@ function saveToLocalStorage() {
     gastosPersonales: state.gastosPersonales,
     habitos: state.habitos,
     amortizacion: state.amortizacion,
-    modalidad: state.modalidad,
+    horasDia: state.horasDia,
+    diasMes: state.diasMes,
     tipoDolar: state.tipoDolar,
     pctImprevistos: state.pctImprevistos,
     pctIIBB: state.pctIIBB,
@@ -866,14 +890,23 @@ function loadFromLocalStorage() {
     if (data.gastosPersonales) state.gastosPersonales = data.gastosPersonales;
     if (data.habitos) state.habitos = data.habitos;
     if (data.amortizacion) state.amortizacion = data.amortizacion;
-    if (data.modalidad) state.modalidad = data.modalidad;
+    if (data.horasDia != null) state.horasDia = data.horasDia;
+    if (data.diasMes != null) state.diasMes = data.diasMes;
+    // Migrate old modalidad format
+    if (!data.horasDia && data.modalidad) {
+      state.horasDia = data.modalidad === 'empleado' ? 8 : 4;
+      state.diasMes = 20;
+    }
     if (data.tipoDolar) state.tipoDolar = data.tipoDolar;
     if (data.pctImprevistos != null) state.pctImprevistos = data.pctImprevistos;
     if (data.pctIIBB != null) state.pctIIBB = data.pctIIBB;
     if (data.pctValorAgregado != null) state.pctValorAgregado = data.pctValorAgregado;
 
     // Sync UI controls with loaded state
-    document.getElementById('selectModalidad').value = state.modalidad;
+    document.getElementById('sliderHorasDia').value = state.horasDia;
+    document.getElementById('valHorasDia').textContent = `${state.horasDia} hs`;
+    document.getElementById('sliderDiasMes').value = state.diasMes;
+    document.getElementById('valDiasMes').textContent = `${state.diasMes} d\u00edas`;
     document.getElementById('selectTipoDolar').value = state.tipoDolar;
     document.getElementById('sliderImprevistos').value = state.pctImprevistos;
     document.getElementById('valImprevistos').textContent = `${state.pctImprevistos}%`;
@@ -909,7 +942,8 @@ function exportJSON() {
     habitos: state.habitos,
     amortizacion: state.amortizacion,
     config: {
-      modalidad: state.modalidad,
+      horasDia: state.horasDia,
+      diasMes: state.diasMes,
       tipoDolar: state.tipoDolar,
       pctImprevistos: state.pctImprevistos,
       pctIIBB: state.pctIIBB,
@@ -952,7 +986,13 @@ function importJSON() {
         state.amortizacion = data.amortizacion;
 
         if (data.config) {
-          state.modalidad = data.config.modalidad || 'freelance';
+          state.horasDia = data.config.horasDia ?? 4;
+          state.diasMes = data.config.diasMes ?? 20;
+          // Migrate old format
+          if (!data.config.horasDia && data.config.modalidad) {
+            state.horasDia = data.config.modalidad === 'empleado' ? 8 : 4;
+            state.diasMes = 20;
+          }
           state.tipoDolar = data.config.tipoDolar || 'mep';
           state.pctImprevistos = data.config.pctImprevistos ?? 15;
           state.pctIIBB = data.config.pctIIBB ?? 3.5;
@@ -960,7 +1000,10 @@ function importJSON() {
         }
 
         // Sync UI
-        document.getElementById('selectModalidad').value = state.modalidad;
+        document.getElementById('sliderHorasDia').value = state.horasDia;
+        document.getElementById('valHorasDia').textContent = `${state.horasDia} hs`;
+        document.getElementById('sliderDiasMes').value = state.diasMes;
+        document.getElementById('valDiasMes').textContent = `${state.diasMes} d\u00edas`;
         document.getElementById('selectTipoDolar').value = state.tipoDolar;
         document.getElementById('sliderImprevistos').value = state.pctImprevistos;
         document.getElementById('valImprevistos').textContent = `${state.pctImprevistos}%`;
