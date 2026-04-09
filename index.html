@@ -28,6 +28,29 @@
     <p class="app-header__subtitle">Herramienta inteligente para freelancers argentinos — datos en tiempo real</p>
   </header>
 
+  <!-- Print-only results summary (hidden on screen, shown at top of PDF) -->
+  <div class="print-summary" id="printSummary">
+    <div class="print-summary__row">
+      <div class="print-summary__item">
+        <span class="print-summary__label">💰 Precio por Hora</span>
+        <span class="print-summary__value" id="printHourly">—</span>
+      </div>
+      <div class="print-summary__item">
+        <span class="print-summary__label">💵 Equivalente USD</span>
+        <span class="print-summary__value print-summary__value--usd" id="printHourlyUsd">—</span>
+      </div>
+      <div class="print-summary__item">
+        <span class="print-summary__label">🎯 Meta mensual</span>
+        <span class="print-summary__value" id="printMeta">—</span>
+      </div>
+      <div class="print-summary__item">
+        <span class="print-summary__label">📋 Monotributo</span>
+        <span class="print-summary__value print-summary__value--mono" id="printMono">—</span>
+      </div>
+    </div>
+    <div class="print-summary__date" id="printDate"></div>
+  </div>
+
   <!-- ===== LIVE TICKER ===== -->
   <div class="live-ticker" id="liveTicker">
     <div class="ticker-item">
@@ -323,19 +346,8 @@
             <div class="tax-bar__segment tax-bar__segment--iibb" style="width: 10%"></div>
             <div class="tax-bar__segment tax-bar__segment--unforeseen" style="width: 15%"></div>
           </div>
-          <div class="tax-legend">
-            <div class="tax-legend__item">
-              <span class="tax-legend__dot tax-legend__dot--net"></span> Tu bolsillo
-            </div>
-            <div class="tax-legend__item">
-              <span class="tax-legend__dot tax-legend__dot--monotributo"></span> Monotributo
-            </div>
-            <div class="tax-legend__item">
-              <span class="tax-legend__dot tax-legend__dot--iibb"></span> IIBB (Ing. Brutos)
-            </div>
-            <div class="tax-legend__item">
-              <span class="tax-legend__dot tax-legend__dot--unforeseen"></span> Imprevistos
-            </div>
+          <div class="tax-legend" id="taxLegend">
+            <!-- Populated by JS with actual values -->
           </div>
         </div>
 

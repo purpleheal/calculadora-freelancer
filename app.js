@@ -550,7 +550,8 @@ function recalculate() {
 
   // Tax breakdown bar
   const totalForBar = metaMensual;
-  const netPct = ((subtotal + valorAgregado) / totalForBar * 100);
+  const netAmount = subtotal + valorAgregado;
+  const netPct = (netAmount / totalForBar * 100);
   const monoPct = (monoCuota / totalForBar * 100);
   const iibbPct = (iibb / totalForBar * 100);
   const imprevPct = (imprevistos / totalForBar * 100);
@@ -562,6 +563,41 @@ function recalculate() {
     <div class="tax-bar__segment tax-bar__segment--iibb" style="width: ${iibbPct}%"></div>
     <div class="tax-bar__segment tax-bar__segment--unforeseen" style="width: ${imprevPct}%"></div>
   `;
+
+  // Tax legend with actual values
+  const fmtPct = (n) => n.toFixed(1) + '%';
+  const taxLegend = document.getElementById('taxLegend');
+  taxLegend.innerHTML = `
+    <div class="tax-legend__item">
+      <span class="tax-legend__dot tax-legend__dot--net"></span>
+      Tu bolsillo: ${fmtPct(netPct)} (${formatARS(netAmount)})
+    </div>
+    <div class="tax-legend__item">
+      <span class="tax-legend__dot tax-legend__dot--monotributo"></span>
+      Monotributo: ${fmtPct(monoPct)} (${formatARS(monoCuota)})
+    </div>
+    <div class="tax-legend__item">
+      <span class="tax-legend__dot tax-legend__dot--iibb"></span>
+      IIBB: ${fmtPct(iibbPct)} (${formatARS(iibb)})
+    </div>
+    <div class="tax-legend__item">
+      <span class="tax-legend__dot tax-legend__dot--unforeseen"></span>
+      Imprevistos: ${fmtPct(imprevPct)} (${formatARS(imprevistos)})
+    </div>
+  `;
+
+  // Update print-only summary
+  const printHourly = document.getElementById('printHourly');
+  if (printHourly) {
+    printHourly.textContent = formatARS(precioHora) + ' /hora';
+    document.getElementById('printHourlyUsd').textContent = `USD $${precioHoraUSD.toFixed(2)} /hora`;
+    document.getElementById('printMeta').textContent = formatARS(metaMensual) + ' /mes';
+    document.getElementById('printMono').textContent = monoCat ? `Categoría ${monoCat.cat}` : 'Excede Mono';
+    const printDate = document.getElementById('printDate');
+    if (printDate) {
+      printDate.textContent = `Calculado el ${new Date().toLocaleDateString('es-AR')} — Dólar ${state.tipoDolar.toUpperCase()}: $${getDolarRate().toLocaleString('es-AR')} — Inflación: ${getInflacionMensual()}% mensual`;
+    }
+  }
 
   // Inflation projection chart (12 months)
   renderProjectionChart(precioHora);

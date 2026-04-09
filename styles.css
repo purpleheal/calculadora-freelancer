@@ -94,6 +94,11 @@ body::before {
   z-index: 0;
 }
 
+/* --- Print Summary (hidden on screen) --- */
+.print-summary {
+  display: none;
+}
+
 /* --- Scrollbar --- */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -1200,7 +1205,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
     font-size: 1.5rem;
   }
 
-  /* Hide live ticker, buttons, add rows, override section */
+  /* Hide interactive elements and screen-only sections */
   .live-ticker,
   .btn, .btn-add,
   .expense-item__remove,
@@ -1208,20 +1213,75 @@ input[type="range"]::-webkit-slider-thumb:hover {
   .add-amort-row,
   .override-section,
   .actions-bar,
-  .projection-chart {
+  .projection-chart,
+  .results-panel {
     display: none !important;
   }
 
-  /* Switch to single column: Results FIRST, then expenses */
-  .app-layout {
-    display: flex !important;
-    flex-direction: column-reverse !important;
-    gap: 1rem;
+  /* Show print-only summary */
+  .print-summary {
+    display: block !important;
+    border: 2px solid #6366f1 !important;
+    border-radius: 12px;
+    padding: 1.25rem !important;
+    margin-bottom: 1rem;
+    background: #fafafe !important;
+    break-inside: avoid;
   }
 
-  .results-panel {
-    position: relative !important;
-    top: 0 !important;
+  .print-summary__row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .print-summary__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .print-summary__label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #555;
+  }
+
+  .print-summary__value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #6366f1;
+  }
+
+  .print-summary__value--usd {
+    color: #059669;
+  }
+
+  .print-summary__value--mono {
+    color: #222;
+    font-size: 0.95rem;
+  }
+
+  .print-summary__date {
+    text-align: center;
+    font-size: 0.65rem;
+    color: #888;
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #e5e5e5;
+  }
+
+  /* Single column layout for print */
+  .app-layout {
+    display: block !important;
+  }
+
+  .main-column {
+    width: 100% !important;
   }
 
   /* Cards */
