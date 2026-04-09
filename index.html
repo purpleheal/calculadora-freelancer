@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Calculadora de precio por hora para freelancers argentinos. Incluye inflación, Monotributo, dólar MEP/Blue y más. Datos en tiempo real.">
+  <title>Calculá tu Precio — Freelancer Argentina 🇦🇷</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CalcuPrecio">
+  <link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- ===== HEADER ===== -->
+  <header class="app-header">
+    <div class="app-header__logo">
+      <div class="app-header__icon">💰</div>
+      <h1>Calculá tu Precio</h1>
+    </div>
+    <p class="app-header__subtitle">Herramienta inteligente para freelancers argentinos — datos en tiempo real</p>
+  </header>
+
+  <!-- ===== LIVE TICKER ===== -->
+  <div class="live-ticker" id="liveTicker">
+    <div class="ticker-item">
+      <span class="ticker-dot"></span>
+      <span class="ticker-item__label">DÓLAR MEP</span>
+      <span class="ticker-item__value ticker-item__value--accent" id="tickerMep">
+        <span class="skeleton skeleton--sm"></span>
+      </span>
+    </div>
+    <div class="ticker-separator"></div>
+    <div class="ticker-item">
+      <span class="ticker-item__label">DÓLAR BLUE</span>
+      <span class="ticker-item__value ticker-item__value--accent" id="tickerBlue">
+        <span class="skeleton skeleton--sm"></span>
+      </span>
+    </div>
+    <div class="ticker-separator"></div>
+    <div class="ticker-item">
+      <span class="ticker-item__label">INFLACIÓN MENSUAL</span>
+      <span class="ticker-item__value ticker-item__value--warn" id="tickerInflacion">
+        <span class="skeleton skeleton--sm"></span>
+      </span>
+    </div>
+    <div class="ticker-separator"></div>
+    <div class="ticker-item">
+      <span class="ticker-item__label">INFLACIÓN ANUAL EST.</span>
+      <span class="ticker-item__value ticker-item__value--warn" id="tickerInflacionAnual">
+        <span class="skeleton skeleton--sm"></span>
+      </span>
+    </div>
+    <div class="ticker-separator"></div>
+    <span class="ticker-status" id="tickerStatus">
+      <span class="ticker-dot"></span> Conectando...
+    </span>
+  </div>
+
+  <!-- ===== MAIN LAYOUT ===== -->
+  <div class="app-layout">
+
+    <!-- ===== LEFT: Input Columns ===== -->
+    <div class="app-inputs">
+
+      <!-- GASTOS DE TRABAJO -->
+      <div class="card" id="cardGastosTrabajo">
+        <div class="card__header">
+          <span class="card__title"><span class="card__title-icon">🏢</span> Gastos de Trabajo</span>
+          <span class="card__badge card__badge--info">Mensual</span>
+        </div>
+        <div class="expense-list" id="listaGastosTrabajo">
+          <!-- Dynamic items -->
+        </div>
+        <div class="add-expense-row">
+          <input type="text" class="form-input" id="nuevoGastoTrabajoNombre" placeholder="Ej: Coworking">
+          <div class="form-input-wrapper">
+            <span class="form-input-prefix">$</span>
+            <input type="number" class="form-input form-input--currency" id="nuevoGastoTrabajoMonto" placeholder="0">
+          </div>
+          <select class="form-select" id="nuevoGastoTrabajoCurrency">
+            <option value="ARS">ARS</option>
+            <option value="USD">USD</option>
+          </select>
+          <button class="btn-add" onclick="addExpense('trabajo')" title="Agregar gasto">+</button>
+        </div>
+      </div>
+
+      <!-- GASTOS PERSONALES -->
+      <div class="card" id="cardGastosPersonales">
+        <div class="card__header">
+          <span class="card__title"><span class="card__title-icon">🏠</span> Gastos Personales</span>
+          <span class="card__badge card__badge--info">Mensual</span>
+        </div>
+        <div class="expense-list" id="listaGastosPersonales">
+          <!-- Dynamic items -->
+        </div>
+        <div class="add-expense-row">
+          <input type="text" class="form-input" id="nuevoGastoPersonalNombre" placeholder="Ej: Alquiler">
+          <div class="form-input-wrapper">
+            <span class="form-input-prefix">$</span>
+            <input type="number" class="form-input form-input--currency" id="nuevoGastoPersonalMonto" placeholder="0">
+          </div>
+          <select class="form-select" id="nuevoGastoPersonalCurrency">
+            <option value="ARS">ARS</option>
+            <option value="USD">USD</option>
+          </select>
+          <button class="btn-add" onclick="addExpense('personal')" title="Agregar gasto">+</button>
+        </div>
+      </div>
+
+      <!-- HÁBITOS DIARIOS -->
+      <div class="card" id="cardHabitos">
+        <div class="card__header">
+          <span class="card__title"><span class="card__title-icon">☕</span> Hábitos Diarios de Trabajo</span>
+          <span class="card__badge card__badge--info">x20 días</span>
+        </div>
+        <div class="expense-list" id="listaHabitos">
+          <!-- Dynamic items -->
+        </div>
+        <div class="add-expense-row">
+          <input type="text" class="form-input" id="nuevoHabitoNombre" placeholder="Ej: Café / Almuerzo">
+          <div class="form-input-wrapper">
+            <span class="form-input-prefix">$</span>
+            <input type="number" class="form-input form-input--currency" id="nuevoHabitoMonto" placeholder="0/día">
+          </div>
+          <select class="form-select" id="nuevoHabitoCurrency" style="visibility:hidden;">
+            <option value="ARS">ARS</option>
+          </select>
+          <button class="btn-add" onclick="addExpense('habitos')" title="Agregar hábito">+</button>
+        </div>
+      </div>
+
+      <!-- AMORTIZACIÓN DE EQUIPOS -->
+      <div class="card" id="cardAmortizacion">
+        <div class="card__header">
+          <span class="card__title"><span class="card__title-icon">💻</span> Amortización de Equipos</span>
+          <span class="card__badge card__badge--live">Auto USD→ARS</span>
+        </div>
+        <div class="amort-list" id="listaAmortizacion">
+          <!-- Dynamic items -->
+        </div>
+        <div class="add-amort-row">
+          <input type="text" class="form-input" id="nuevoEquipoNombre" placeholder="Ej: MacBook Pro">
+          <div class="form-input-wrapper">
+            <span class="form-input-prefix">$</span>
+            <input type="number" class="form-input form-input--currency" id="nuevoEquipoPrecio" placeholder="Precio">
+          </div>
+          <select class="form-select" id="nuevoEquipoCurrency">
+            <option value="USD">USD</option>
+            <option value="ARS">ARS</option>
+          </select>
+          <select class="form-select" id="nuevoEquipoVida">
+            <option value="1">1 año</option>
+            <option value="2">2 años</option>
+            <option value="3" selected>3 años</option>
+            <option value="4">4 años</option>
+            <option value="5">5 años</option>
+          </select>
+          <button class="btn-add" onclick="addAmortItem()" title="Agregar equipo">+</button>
+        </div>
+      </div>
+
+      <!-- CONFIGURACIÓN IMPOSITIVA Y MÁRGENES -->
+      <div class="card" id="cardConfig">
+        <div class="card__header">
+          <span class="card__title"><span class="card__title-icon">⚙️</span> Configuración</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Modalidad</label>
+            <select class="form-select" id="selectModalidad">
+              <option value="freelance">Freelance (80 hs/mes facturables)</option>
+              <option value="empleado">Relación de dependencia (160 hs/mes)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo de dólar para conversiones</label>
+            <select class="form-select" id="selectTipoDolar">
+              <option value="mep">Dólar MEP (Bolsa)</option>
+              <option value="blue">Dólar Blue</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <div class="form-row--3" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <div class="slider-container">
+              <div class="slider-header">
+                <label class="form-label" style="margin:0">Imprevistos</label>
+                <span class="slider-value" id="valImprevistos">15%</span>
+              </div>
+              <input type="range" min="0" max="30" value="15" id="sliderImprevistos">
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="slider-container">
+              <div class="slider-header">
+                <label class="form-label" style="margin:0">IIBB (Ing. Brutos)</label>
+                <span class="slider-value" id="valIIBB">3.5%</span>
+              </div>
+              <input type="range" min="0" max="10" step="0.5" value="3.5" id="sliderIIBB">
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="slider-container">
+              <div class="slider-header">
+                <label class="form-label" style="margin:0">Valor Agregado</label>
+                <span class="slider-value" id="valValorAgregado">10%</span>
+              </div>
+              <input type="range" min="0" max="50" value="10" id="sliderValorAgregado">
+            </div>
+          </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- Manual Override Toggle -->
+        <div class="override-section">
+          <div class="toggle-row">
+            <span class="toggle-row__label">✏️ Override manual (simular escenarios)</span>
+            <label class="toggle">
+              <input type="checkbox" id="toggleOverride">
+              <span class="toggle__slider"></span>
+            </label>
+          </div>
+          <div class="override-inputs" id="overrideInputs">
+            <div class="form-row" style="margin-top: 0.5rem;">
+              <div class="form-group">
+                <label class="form-label">Dólar MEP manual</label>
+                <div class="form-input-wrapper">
+                  <span class="form-input-prefix">$</span>
+                  <input type="number" class="form-input form-input--currency" id="overrideMep" placeholder="1430">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Inflación mensual manual</label>
+                <div class="form-input-wrapper">
+                  <span class="form-input-prefix">%</span>
+                  <input type="number" class="form-input form-input--currency" id="overrideInflacion" placeholder="2.6" step="0.1">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===== RIGHT: Results Panel ===== -->
+    <div class="results-panel">
+      <div class="result-card">
+        <div class="result-hero">
+          <div class="result-hero__label">Tu Precio por Hora</div>
+          <div class="result-hero__value" id="resultHourlyRate">$0</div>
+          <div class="result-hero__suffix">ARS / hora</div>
+          <div class="result-hero__usd" id="resultHourlyUsd">≈ USD $0</div>
+        </div>
+
+        <div class="result-rows">
+          <div class="result-row">
+            <span class="result-row__label">💼 Gastos de trabajo</span>
+            <span class="result-row__value" id="resultGastosTrabajo">$0</span>
+          </div>
+          <div class="result-row">
+            <span class="result-row__label">🏠 Gastos personales</span>
+            <span class="result-row__value" id="resultGastosPersonales">$0</span>
+          </div>
+          <div class="result-row">
+            <span class="result-row__label">☕ Hábitos diarios</span>
+            <span class="result-row__value" id="resultHabitos">$0</span>
+          </div>
+          <div class="result-row">
+            <span class="result-row__label">💻 Amortización mensual</span>
+            <span class="result-row__value" id="resultAmortizacion">$0</span>
+          </div>
+          <div class="result-row" style="border-top: 2px solid var(--border-accent);">
+            <span class="result-row__label"><strong>Subtotal gastos</strong></span>
+            <span class="result-row__value result-row__value--highlight" id="resultSubtotal">$0</span>
+          </div>
+          <div class="result-row">
+            <span class="result-row__label">🛡️ + Imprevistos</span>
+            <span class="result-row__value result-row__value--warn" id="resultImprevistos">$0</span>
+          </div>
+          <div class="result-row">
+            <span class="result-row__label">⭐ + Valor agregado</span>
+            <span class="result-row__value result-row__value--warn" id="resultValorAgregado">$0</span>
+          </div>
+          <div class="result-row">
+            <span class="result-row__label">📋 Monotributo cuota</span>
+            <span class="result-row__value" id="resultMonotributo">$0</span>
+          </div>
+          <div class="result-row">
+            <span class="result-row__label">🏛️ IIBB (Ingresos Brutos)</span>
+            <span class="result-row__value" id="resultIIBB">$0</span>
+          </div>
+          <div class="result-row" style="border-top: 2px solid var(--border-accent); padding-top: 0.75rem;">
+            <span class="result-row__label"><strong>🎯 Meta mensual TOTAL</strong></span>
+            <span class="result-row__value result-row__value--highlight" id="resultMetaMensual" style="font-size: 1rem;">$0</span>
+          </div>
+          <div class="result-row">
+            <span class="result-row__label">Monotributo categoría</span>
+            <span id="resultMonoCategoria"><span class="mono-badge mono-badge--fit">—</span></span>
+          </div>
+        </div>
+
+        <!-- Tax Breakdown Bar -->
+        <div class="tax-breakdown">
+          <div class="tax-breakdown__title">Desglose de tu facturación</div>
+          <div class="tax-bar" id="taxBar">
+            <div class="tax-bar__segment tax-bar__segment--net" style="width: 60%"></div>
+            <div class="tax-bar__segment tax-bar__segment--monotributo" style="width: 15%"></div>
+            <div class="tax-bar__segment tax-bar__segment--iibb" style="width: 10%"></div>
+            <div class="tax-bar__segment tax-bar__segment--unforeseen" style="width: 15%"></div>
+          </div>
+          <div class="tax-legend">
+            <div class="tax-legend__item">
+              <span class="tax-legend__dot tax-legend__dot--net"></span> Tu bolsillo
+            </div>
+            <div class="tax-legend__item">
+              <span class="tax-legend__dot tax-legend__dot--monotributo"></span> Monotributo
+            </div>
+            <div class="tax-legend__item">
+              <span class="tax-legend__dot tax-legend__dot--iibb"></span> IIBB (Ing. Brutos)
+            </div>
+            <div class="tax-legend__item">
+              <span class="tax-legend__dot tax-legend__dot--unforeseen"></span> Imprevistos
+            </div>
+          </div>
+        </div>
+
+        <!-- 12-Month Inflation Projection -->
+        <div class="projection-chart">
+          <div class="projection-chart__title">📈 Proyección 12 meses con inflación</div>
+          <div class="chart-bars" id="chartBars">
+            <!-- Generated by JS -->
+          </div>
+          <div class="chart-labels" id="chartLabels">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions-bar">
+          <button class="btn btn--primary btn--block" onclick="exportCSV()">📥 Exportar CSV</button>
+          <button class="btn btn--ghost" onclick="window.print()">🖨️ Imprimir</button>
+        </div>
+        <div class="actions-bar" style="margin-top: 0.5rem;">
+          <button class="btn btn--success btn--block" onclick="exportJSON()">💾 Guardar Backup (.json)</button>
+          <button class="btn btn--ghost" onclick="importJSON()">📂 Cargar Backup</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="app.js"></script>
+<script>
+  // Register Service Worker for PWA
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').then(reg => {
+        console.log('✅ Service Worker registered:', reg.scope);
+      }).catch(err => {
+        console.warn('SW registration failed:', err);
+      });
+    });
+  }
+</script>
+</body>
+</html>
+
