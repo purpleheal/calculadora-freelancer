@@ -1163,32 +1163,245 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 /* --- Print styles for export --- */
 @media print {
-  body {
-    background: white;
-    color: #111;
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
-  body::before { display: none; }
+  html {
+    font-size: 13px;
+  }
 
+  body {
+    background: white !important;
+    color: #1a1a2e !important;
+  }
+
+  body::before { display: none !important; }
+
+  .app-container {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  /* Header */
+  .app-header {
+    padding: 0.5rem 0;
+    margin-bottom: 0.75rem;
+  }
+
+  .app-header__icon {
+    background: #6366f1 !important;
+  }
+
+  .app-header h1 {
+    -webkit-text-fill-color: #6366f1 !important;
+    color: #6366f1 !important;
+    font-size: 1.5rem;
+  }
+
+  /* Hide live ticker, buttons, add rows, override section */
+  .live-ticker,
+  .btn, .btn-add,
+  .expense-item__remove,
+  .add-expense-row,
+  .add-amort-row,
+  .override-section,
+  .actions-bar,
+  .projection-chart {
+    display: none !important;
+  }
+
+  /* Switch to single column: Results FIRST, then expenses */
+  .app-layout {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    gap: 1rem;
+  }
+
+  .results-panel {
+    position: relative !important;
+    top: 0 !important;
+  }
+
+  /* Cards */
   .card {
-    background: white;
-    border: 1px solid #ddd;
-    backdrop-filter: none;
-    box-shadow: none;
+    background: white !important;
+    border: 1px solid #ddd !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    margin-top: 0.75rem !important;
+    padding: 0.75rem 1rem !important;
+  }
+
+  .card::before { display: none; }
+
+  .card__badge {
+    border: 1px solid #999 !important;
+    background: #f0f0f0 !important;
+    color: #555 !important;
+  }
+
+  /* Result card */
+  .result-card {
+    background: #fafafe !important;
+    border: 2px solid #6366f1 !important;
+    box-shadow: none !important;
+    padding: 1.25rem !important;
     break-inside: avoid;
   }
 
-  .result-card {
-    box-shadow: none;
-    border: 2px solid #6366f1;
+  .result-card::before { display: none; }
+
+  .result-hero {
+    padding: 0.75rem 0 !important;
+  }
+
+  .result-hero__label {
+    color: #555 !important;
   }
 
   .result-hero__value {
-    -webkit-text-fill-color: #6366f1;
-    color: #6366f1;
+    -webkit-text-fill-color: #6366f1 !important;
+    color: #6366f1 !important;
+    font-size: 2.5rem !important;
   }
 
-  .btn, .btn-add, .expense-item__remove {
-    display: none;
+  .result-hero__suffix {
+    color: #666 !important;
+  }
+
+  .result-hero__usd {
+    color: #059669 !important;
+  }
+
+  /* Result rows */
+  .result-row {
+    padding: 0.35rem 0 !important;
+  }
+
+  .result-row__label {
+    color: #333 !important;
+  }
+
+  .result-row__value {
+    color: #111 !important;
+  }
+
+  .result-row__value--highlight {
+    color: #059669 !important;
+  }
+
+  .result-row__value--warn {
+    color: #b45309 !important;
+  }
+
+  /* Tax breakdown */
+  .tax-breakdown {
+    break-inside: avoid;
+  }
+
+  .tax-breakdown__title {
+    color: #555 !important;
+  }
+
+  .tax-bar__segment--net { background: #059669 !important; }
+  .tax-bar__segment--monotributo { background: #6366f1 !important; }
+  .tax-bar__segment--iibb { background: #d97706 !important; }
+  .tax-bar__segment--unforeseen { background: #dc2626 !important; }
+
+  .tax-legend__item {
+    color: #333 !important;
+  }
+
+  .tax-legend__dot--net { background: #059669 !important; }
+  .tax-legend__dot--monotributo { background: #6366f1 !important; }
+  .tax-legend__dot--iibb { background: #d97706 !important; }
+  .tax-legend__dot--unforeseen { background: #dc2626 !important; }
+
+  /* Mono badge */
+  .mono-badge--fit {
+    background: #d1fae5 !important;
+    color: #065f46 !important;
+    border: 1px solid #6ee7b7 !important;
+  }
+
+  .mono-badge--exceed {
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+    border: 1px solid #fca5a5 !important;
+  }
+
+  /* Expense items */
+  .expense-item {
+    background: #f8f8fc !important;
+    border: 1px solid #e5e5e5 !important;
+    grid-template-columns: 1fr auto !important;
+  }
+
+  .expense-item__name {
+    color: #222 !important;
+  }
+
+  .expense-item__amount {
+    color: #4f46e5 !important;
+  }
+
+  .expense-item__editable {
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Amort items */
+  .amort-item {
+    background: #f8f8fc !important;
+    border: 1px solid #e5e5e5 !important;
+    grid-template-columns: 1fr 80px 40px auto !important;
+  }
+
+  .amort-item__monthly {
+    color: #059669 !important;
+  }
+
+  /* Config section - show slider values as static text */
+  .slider-container input[type="range"] {
+    display: none !important;
+  }
+
+  .form-select, .form-input {
+    border: 1px solid #ccc !important;
+    background: white !important;
+    color: #111 !important;
+  }
+
+  .slider-value {
+    color: #4f46e5 !important;
+  }
+
+  .section-divider {
+    background: #ddd !important;
+  }
+
+  /* Card titles */
+  .card__title {
+    color: #111 !important;
+  }
+
+  .form-label {
+    color: #444 !important;
+  }
+
+  /* Print footer with date */
+  .app-container::after {
+    content: "Generado con CalcuPrecio — " attr(data-date);
+    display: block;
+    text-align: center;
+    font-size: 0.7rem;
+    color: #999;
+    margin-top: 1rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #ddd;
   }
 }
