@@ -1488,6 +1488,33 @@ function empRecalculate() {
     `;
   }
 
+  // Populate Print Summary for Employee
+  const printEmpSueldo = document.getElementById('printEmpSueldo');
+  if (printEmpSueldo) {
+    printEmpSueldo.textContent = formatARS(sueldo);
+    document.getElementById('printEmpAhorro').textContent = formatARS(ahorro);
+    document.getElementById('printEmpGastos').textContent = formatARS(totalGastos);
+    
+    const empBalancePrint = document.getElementById('printEmpBalance');
+    if (balance < 0) {
+      empBalancePrint.textContent = '-' + formatARS(Math.abs(balance));
+      empBalancePrint.style.color = '#dc2626'; // Red for negative
+    } else {
+      empBalancePrint.textContent = formatARS(balance);
+      empBalancePrint.style.color = '#059669'; // Green for positive
+    }
+
+    document.getElementById('printEmpDistGastos').textContent = formatARS(totalGastos);
+    document.getElementById('printEmpDistOcio').textContent = formatARS(totalOcio);
+    document.getElementById('printEmpDistAmort').textContent = formatARS(totalAmort);
+    document.getElementById('printEmpDistAhorro').textContent = formatARS(ahorro);
+    
+    const printEmpDate = document.getElementById('printEmpDate');
+    if (printEmpDate) {
+      printEmpDate.textContent = `Calculado el ${new Date().toLocaleDateString('es-AR')}`;
+    }
+  }
+
   saveToLocalStorage();
 }
 

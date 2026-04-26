@@ -452,6 +452,51 @@
   <!-- ===== EMPLOYEE MODE ===== -->
   <div class="mode-content mode-content--hidden" id="modeEmpleado">
 
+    <!-- Print-only results summary for Employee (hidden on screen, shown at top of PDF) -->
+    <div class="print-summary" id="empPrintSummary">
+      <div class="print-summary__row">
+        <div class="print-summary__item">
+          <span class="print-summary__label">💵 Sueldo Neto</span>
+          <span class="print-summary__value" id="printEmpSueldo">—</span>
+        </div>
+        <div class="print-summary__item">
+          <span class="print-summary__label">🏦 Ahorro Mensual</span>
+          <span class="print-summary__value print-summary__value--usd" id="printEmpAhorro">—</span>
+        </div>
+        <div class="print-summary__item">
+          <span class="print-summary__label">🏠 Gastos Fijos</span>
+          <span class="print-summary__value" id="printEmpGastos">—</span>
+        </div>
+        <div class="print-summary__item">
+          <span class="print-summary__label">💰 Sobrante</span>
+          <span class="print-summary__value print-summary__value--mono" id="printEmpBalance">—</span>
+        </div>
+      </div>
+      
+      <div class="print-distribution">
+        <div class="print-distribution__title">📋 Distribución del Sueldo</div>
+        <div class="print-distribution__grid">
+          <div class="print-distribution__item">
+            <span class="print-distribution__label">🏠 Gastos Fijos</span>
+            <span class="print-distribution__value" id="printEmpDistGastos">$0</span>
+          </div>
+          <div class="print-distribution__item">
+            <span class="print-distribution__label">🎮 Ocio / Entretenim.</span>
+            <span class="print-distribution__value" id="printEmpDistOcio">$0</span>
+          </div>
+          <div class="print-distribution__item">
+            <span class="print-distribution__label">💻 Amortización</span>
+            <span class="print-distribution__value" id="printEmpDistAmort">$0</span>
+          </div>
+          <div class="print-distribution__item print-distribution__item--highlight">
+            <span class="print-distribution__label">🏦 Ahorro Realizado</span>
+            <span class="print-distribution__value" id="printEmpDistAhorro">$0</span>
+          </div>
+        </div>
+      </div>
+      <div class="print-summary__date" id="printEmpDate"></div>
+    </div>
+
     <div class="app-layout app-layout--empleado">
 
       <!-- LEFT: Employee Inputs -->
