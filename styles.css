@@ -1485,8 +1485,104 @@ input[type="range"]::-webkit-slider-thumb:hover {
   .add-amort-row,
   .override-section,
   .actions-bar,
-  .projection-chart {
+  .projection-chart,
+  .mode-switcher {
     display: none !important;
+  }
+
+  /* Show the active mode, hide the inactive one */
+  .mode-content {
+    display: block !important;
+  }
+
+  .mode-content--hidden {
+    display: none !important;
+  }
+
+  /* Employee mode print styles */
+  .emp-alert {
+    background: #fef2f2 !important;
+    border: 2px solid #dc2626 !important;
+    color: #991b1b !important;
+    break-inside: avoid;
+    padding: 0.75rem !important;
+    border-radius: 8px;
+  }
+
+  .emp-alert--hidden {
+    display: none !important;
+  }
+
+  .emp-alert__text {
+    color: #991b1b !important;
+  }
+
+  .emp-alert__text strong {
+    color: #991b1b !important;
+  }
+
+  .emp-alert__hint {
+    color: #666 !important;
+  }
+
+  .emp-healthy {
+    background: #f0fdf4 !important;
+    border: 2px solid #059669 !important;
+    color: #065f46 !important;
+    break-inside: avoid;
+    padding: 0.75rem !important;
+    border-radius: 8px;
+  }
+
+  .emp-healthy--hidden {
+    display: none !important;
+  }
+
+  .emp-healthy__text {
+    color: #065f46 !important;
+  }
+
+  .emp-healthy__text strong {
+    color: #065f46 !important;
+  }
+
+  .result-card--danger {
+    border-color: #dc2626 !important;
+    box-shadow: none !important;
+  }
+
+  .result-card--danger .result-hero__value {
+    -webkit-text-fill-color: #dc2626 !important;
+    color: #dc2626 !important;
+  }
+
+  .result-row__value--danger {
+    color: #dc2626 !important;
+  }
+
+  .emp-savings-amount {
+    background: #f0fdf4 !important;
+    border: 1px solid #bbf7d0 !important;
+    break-inside: avoid;
+  }
+
+  .emp-savings-amount__text {
+    color: #333 !important;
+  }
+
+  .emp-savings-amount__text strong {
+    color: #059669 !important;
+    text-shadow: none !important;
+  }
+
+  .card--salary {
+    border-color: #059669 !important;
+  }
+
+  .form-input--big {
+    border: 1px solid #ccc !important;
+    background: white !important;
+    color: #111 !important;
   }
 
   /* Show print-only summary */
