@@ -604,8 +604,8 @@ function recalculate() {
     if (printDistTaxes) {
       printDistTaxes.textContent = formatARS(monoCuota + iibb);
       document.getElementById('printDistUnforeseen').textContent = formatARS(imprevistos);
-      document.getElementById('printDistOps').textContent = formatARS(totalTrabajo + totalAmort + totalHabitos);
-      document.getElementById('printDistNet').textContent = formatARS(totalPersonal + valorAgregado);
+      document.getElementById('printDistOps').textContent = formatARS(totalTrabajo + totalAmort + totalHabitos + totalPersonal);
+      document.getElementById('printDistNet').textContent = formatARS(valorAgregado);
     }
   }
 
