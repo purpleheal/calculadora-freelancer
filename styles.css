@@ -1299,6 +1299,18 @@ input[type="range"]::-webkit-slider-thumb:hover {
   color: var(--text-primary);
 }
 
+.btn--danger-text {
+  color: var(--text-muted);
+  border-color: transparent;
+  font-size: 0.75rem;
+}
+
+.btn--danger-text:hover {
+  color: var(--accent-rose);
+  border-color: rgba(244, 63, 94, 0.3);
+  background: rgba(244, 63, 94, 0.05);
+}
+
 .btn--success {
   background: var(--gradient-success);
   color: white;

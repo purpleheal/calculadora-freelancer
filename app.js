@@ -1034,6 +1034,58 @@ function importJSON() {
   input.click();
 }
 
+// ===================== CLEAR DATA =====================
+
+function clearFreelancerData() {
+  if (!confirm('¿Estás seguro de que querés limpiar todos los datos del modo Freelancer?\n\nSe van a borrar todos los gastos, hábitos y amortizaciones.\n\n💡 Tip: Podés guardar un backup primero.')) return;
+
+  // Clear all arrays (keep only monotributo auto-item)
+  state.gastosTrabajo = state.gastosTrabajo.filter(item => item.autoMono);
+  state.gastosPersonales = [];
+  state.habitos = [];
+  state.amortizacion = [];
+
+  // Reset config to defaults
+  state.horasDia = 4;
+  state.diasMes = 20;
+  state.pctImprevistos = 15;
+  state.pctIIBB = 3.5;
+  state.pctValorAgregado = 10;
+
+  // Sync UI sliders
+  document.getElementById('sliderHorasDia').value = state.horasDia;
+  document.getElementById('valHorasDia').textContent = `${state.horasDia} hs`;
+  document.getElementById('sliderDiasMes').value = state.diasMes;
+  document.getElementById('valDiasMes').textContent = `${state.diasMes} días`;
+  document.getElementById('sliderImprevistos').value = state.pctImprevistos;
+  document.getElementById('valImprevistos').textContent = `${state.pctImprevistos}%`;
+  document.getElementById('sliderIIBB').value = state.pctIIBB;
+  document.getElementById('valIIBB').textContent = `${state.pctIIBB}%`;
+  document.getElementById('sliderValorAgregado').value = state.pctValorAgregado;
+  document.getElementById('valValorAgregado').textContent = `${state.pctValorAgregado}%`;
+
+  renderAll();
+  recalculate();
+}
+
+function clearEmpleadoData() {
+  if (!confirm('¿Estás seguro de que querés limpiar todos los datos del modo Empleado?\n\nSe van a borrar todos los gastos, ocio y amortizaciones.\n\n💡 Tip: Podés guardar un backup primero.')) return;
+
+  empState.sueldo = 0;
+  empState.pctAhorro = 0;
+  empState.gastos = [];
+  empState.ocio = [];
+  empState.amortizacion = [];
+
+  // Sync UI
+  document.getElementById('empSueldo').value = '';
+  document.getElementById('sliderEmpAhorro').value = 0;
+  document.getElementById('valEmpAhorro').textContent = '0%';
+
+  renderAllEmp();
+  empRecalculate();
+}
+
 // ===================== EMPLOYEE MODE =====================
 
 const empState = {
