@@ -1034,19 +1034,366 @@ function importJSON() {
   input.click();
 }
 
+// ===================== EMPLOYEE MODE =====================
+
+const empState = {
+  mode: 'freelancer', // 'freelancer' or 'empleado'
+  sueldo: 500000,
+  pctAhorro: 20,
+  gastos: [
+    { name: 'Alquiler / Hipoteca', amount: 200000 },
+    { name: 'Servicios (luz, gas, agua)', amount: 45000 },
+    { name: 'Supermercado', amount: 180000 },
+    { name: 'Transporte', amount: 30000 },
+    { name: 'Salud', amount: 25000 },
+  ],
+  ocio: [
+    { name: 'Salidas / Restaurantes', amount: 40000 },
+    { name: 'Streaming (Netflix, Spotify)', amount: 12000 },
+    { name: 'Hobbies', amount: 20000 },
+  ],
+};
+
+function switchMode(mode) {
+  empState.mode = mode;
+
+  const freelancerEl = document.getElementById('modeFreelancer');
+  const empleadoEl = document.getElementById('modeEmpleado');
+  const btnFreelancer = document.getElementById('btnModeFreelancer');
+  const btnEmpleado = document.getElementById('btnModeEmpleado');
+
+  if (mode === 'freelancer') {
+    freelancerEl.classList.remove('mode-content--hidden');
+    empleadoEl.classList.add('mode-content--hidden');
+    btnFreelancer.classList.add('mode-switcher__btn--active');
+    btnEmpleado.classList.remove('mode-switcher__btn--active');
+  } else {
+    freelancerEl.classList.add('mode-content--hidden');
+    empleadoEl.classList.remove('mode-content--hidden');
+    btnFreelancer.classList.remove('mode-switcher__btn--active');
+    btnEmpleado.classList.add('mode-switcher__btn--active');
+    empRecalculate();
+  }
+
+  saveToLocalStorage();
+}
+
+// --- Employee Expense Lists ---
+
+function renderEmpExpenseList(listId, items, type) {
+  const container = document.getElementById(listId);
+  container.innerHTML = '';
+
+  items.forEach((item, index) => {
+    const el = document.createElement('div');
+    el.className = 'expense-item';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'expense-item__name expense-item__editable';
+    nameSpan.title = 'Clic para editar';
+    nameSpan.textContent = item.name;
+    nameSpan.addEventListener('click', () => startEmpEditName(type, index, nameSpan));
+
+    const amountSpan = document.createElement('span');
+    amountSpan.className = 'expense-item__amount expense-item__editable';
+    amountSpan.title = 'Clic para editar';
+    amountSpan.textContent = formatARS(item.amount);
+    amountSpan.addEventListener('click', () => startEmpEditAmount(type, index, amountSpan));
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'expense-item__remove';
+    removeBtn.title = 'Eliminar';
+    removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', () => removeEmpExpense(type, index));
+
+    el.appendChild(nameSpan);
+    el.appendChild(amountSpan);
+    el.appendChild(removeBtn);
+
+    container.appendChild(el);
+  });
+}
+
+function startEmpEditName(type, index, spanEl) {
+  const items = type === 'gastos' ? empState.gastos : empState.ocio;
+  const item = items[index];
+  if (!item) return;
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = item.name;
+  input.className = 'inline-edit';
+  spanEl.replaceWith(input);
+  input.focus();
+  input.select();
+
+  const commit = () => {
+    const val = input.value.trim();
+    if (val) item.name = val;
+    renderAllEmp();
+    empRecalculate();
+  };
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { input.removeEventListener('blur', commit); commit(); }
+    if (e.key === 'Escape') { input.removeEventListener('blur', commit); renderAllEmp(); empRecalculate(); }
+  });
+}
+
+function startEmpEditAmount(type, index, spanEl) {
+  const items = type === 'gastos' ? empState.gastos : empState.ocio;
+  const item = items[index];
+  if (!item) return;
+
+  const input = document.createElement('input');
+  input.type = 'number';
+  input.value = item.amount;
+  input.className = 'inline-edit inline-edit--number';
+  input.step = 'any';
+  spanEl.replaceWith(input);
+  input.focus();
+  input.select();
+
+  const commit = () => {
+    const val = parseFloat(input.value);
+    if (!isNaN(val) && val > 0) item.amount = val;
+    renderAllEmp();
+    empRecalculate();
+  };
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { input.removeEventListener('blur', commit); commit(); }
+    if (e.key === 'Escape') { input.removeEventListener('blur', commit); renderAllEmp(); empRecalculate(); }
+  });
+}
+
+function addEmpExpense(type) {
+  let nameInput, amountInput;
+
+  if (type === 'gastos') {
+    nameInput = document.getElementById('nuevoEmpGastoNombre');
+    amountInput = document.getElementById('nuevoEmpGastoMonto');
+  } else {
+    nameInput = document.getElementById('nuevoEmpOcioNombre');
+    amountInput = document.getElementById('nuevoEmpOcioMonto');
+  }
+
+  const name = nameInput.value.trim();
+  const amount = parseFloat(amountInput.value);
+  if (!name || isNaN(amount) || amount <= 0) return;
+
+  if (type === 'gastos') {
+    empState.gastos.push({ name, amount });
+  } else {
+    empState.ocio.push({ name, amount });
+  }
+
+  nameInput.value = '';
+  amountInput.value = '';
+  renderAllEmp();
+  empRecalculate();
+}
+
+function removeEmpExpense(type, index) {
+  if (type === 'gastos') {
+    empState.gastos.splice(index, 1);
+  } else {
+    empState.ocio.splice(index, 1);
+  }
+  renderAllEmp();
+  empRecalculate();
+}
+
+function renderAllEmp() {
+  renderEmpExpenseList('listaEmpGastos', empState.gastos, 'gastos');
+  renderEmpExpenseList('listaEmpOcio', empState.ocio, 'ocio');
+}
+
+// --- Employee Recalculation ---
+
+function empRecalculate() {
+  const sueldo = empState.sueldo;
+  const ahorro = sueldo * (empState.pctAhorro / 100);
+
+  let totalGastos = 0;
+  empState.gastos.forEach(item => { totalGastos += item.amount; });
+
+  let totalOcio = 0;
+  empState.ocio.forEach(item => { totalOcio += item.amount; });
+
+  const totalEgresos = totalGastos + totalOcio + ahorro;
+  const balance = sueldo - totalEgresos;
+
+  // Update UI
+  document.getElementById('empResultSueldo').textContent = formatARS(sueldo);
+  document.getElementById('empResultGastos').textContent = formatARS(totalGastos);
+  document.getElementById('empResultOcio').textContent = formatARS(totalOcio);
+  document.getElementById('empResultAhorro').textContent = formatARS(ahorro);
+  document.getElementById('empAhorroPctLabel').textContent = empState.pctAhorro;
+  document.getElementById('empAhorroDisplay').textContent = formatARS(ahorro);
+
+  // Balance
+  const balanceEl = document.getElementById('empBalance');
+  const sobranteEl = document.getElementById('empResultSobrante');
+  const cardEl = document.getElementById('empResultCard');
+  const alertEl = document.getElementById('empAlert');
+  const healthyEl = document.getElementById('empHealthy');
+  const statusEl = document.getElementById('empBalanceStatus');
+
+  if (balance < 0) {
+    // DANGER: Overspending
+    balanceEl.textContent = '-' + formatARS(Math.abs(balance));
+    sobranteEl.textContent = '-' + formatARS(Math.abs(balance));
+    sobranteEl.className = 'result-row__value result-row__value--danger';
+    cardEl.classList.add('result-card--danger');
+    alertEl.classList.remove('emp-alert--hidden');
+    healthyEl.classList.add('emp-healthy--hidden');
+    document.getElementById('empAlertAmount').textContent = formatARS(Math.abs(balance));
+    statusEl.textContent = '¡Estás gastando de más!';
+    statusEl.style.color = 'var(--accent-rose)';
+  } else {
+    // HEALTHY
+    balanceEl.textContent = formatARS(balance);
+    sobranteEl.textContent = formatARS(balance);
+    sobranteEl.className = 'result-row__value result-row__value--highlight';
+    cardEl.classList.remove('result-card--danger');
+    alertEl.classList.add('emp-alert--hidden');
+    if (balance > 0) {
+      healthyEl.classList.remove('emp-healthy--hidden');
+      document.getElementById('empHealthyAmount').textContent = formatARS(balance);
+    } else {
+      healthyEl.classList.add('emp-healthy--hidden');
+    }
+    statusEl.textContent = 'después de gastos y ahorro';
+    statusEl.style.color = '';
+  }
+
+  // Distribution bar
+  const empTaxBar = document.getElementById('empTaxBar');
+  const empTaxLegend = document.getElementById('empTaxLegend');
+
+  if (sueldo > 0) {
+    const gastosPct = (totalGastos / sueldo * 100);
+    const ocioPct = (totalOcio / sueldo * 100);
+    const ahorroPct = (ahorro / sueldo * 100);
+    const sobrPct = Math.max(0, balance / sueldo * 100);
+
+    empTaxBar.innerHTML = `
+      <div class="tax-bar__segment tax-bar__segment--monotributo" style="width: ${gastosPct}%"></div>
+      <div class="tax-bar__segment tax-bar__segment--iibb" style="width: ${ocioPct}%"></div>
+      <div class="tax-bar__segment tax-bar__segment--unforeseen" style="width: ${ahorroPct}%"></div>
+      <div class="tax-bar__segment tax-bar__segment--net" style="width: ${sobrPct}%"></div>
+    `;
+
+    const fmtPct = (n) => n.toFixed(1) + '%';
+    empTaxLegend.innerHTML = `
+      <div class="tax-legend__item">
+        <span class="tax-legend__dot tax-legend__dot--monotributo"></span>
+        Gastos: ${fmtPct(gastosPct)}
+      </div>
+      <div class="tax-legend__item">
+        <span class="tax-legend__dot tax-legend__dot--iibb"></span>
+        Ocio: ${fmtPct(ocioPct)}
+      </div>
+      <div class="tax-legend__item">
+        <span class="tax-legend__dot tax-legend__dot--unforeseen"></span>
+        Ahorro: ${fmtPct(ahorroPct)}
+      </div>
+      <div class="tax-legend__item">
+        <span class="tax-legend__dot tax-legend__dot--net"></span>
+        Sobrante: ${fmtPct(sobrPct)}
+      </div>
+    `;
+  }
+
+  saveToLocalStorage();
+}
+
+// --- Employee Controls Binding ---
+
+function bindEmpControls() {
+  document.getElementById('empSueldo').addEventListener('input', (e) => {
+    empState.sueldo = parseFloat(e.target.value) || 0;
+    empRecalculate();
+  });
+
+  document.getElementById('sliderEmpAhorro').addEventListener('input', (e) => {
+    empState.pctAhorro = parseInt(e.target.value);
+    document.getElementById('valEmpAhorro').textContent = `${empState.pctAhorro}%`;
+    empRecalculate();
+  });
+
+  // Allow Enter on employee add-expense inputs
+  document.querySelectorAll('#modeEmpleado .add-expense-row input').forEach(input => {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const btn = input.closest('.add-expense-row').querySelector('.btn-add');
+        if (btn) btn.click();
+      }
+    });
+  });
+}
+
+// --- Employee Persistence ---
+
+function saveEmpToLocalStorage() {
+  try {
+    localStorage.setItem('calcuprecio_emp', JSON.stringify({
+      sueldo: empState.sueldo,
+      pctAhorro: empState.pctAhorro,
+      gastos: empState.gastos,
+      ocio: empState.ocio,
+      mode: empState.mode,
+    }));
+  } catch (e) { /* silent */ }
+}
+
+function loadEmpFromLocalStorage() {
+  try {
+    const raw = localStorage.getItem('calcuprecio_emp');
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data.sueldo != null) empState.sueldo = data.sueldo;
+    if (data.pctAhorro != null) empState.pctAhorro = data.pctAhorro;
+    if (data.gastos) empState.gastos = data.gastos;
+    if (data.ocio) empState.ocio = data.ocio;
+    if (data.mode) empState.mode = data.mode;
+
+    // Sync UI
+    document.getElementById('empSueldo').value = empState.sueldo;
+    document.getElementById('sliderEmpAhorro').value = empState.pctAhorro;
+    document.getElementById('valEmpAhorro').textContent = `${empState.pctAhorro}%`;
+  } catch (e) { /* silent */ }
+}
+
+// Override saveToLocalStorage to include emp data
+const _origSave = saveToLocalStorage;
+saveToLocalStorage = function() {
+  _origSave();
+  saveEmpToLocalStorage();
+};
+
 // ===================== INIT =====================
 
 document.addEventListener('DOMContentLoaded', () => {
   bindControls();
+  bindEmpControls();
 
   // Try to load saved data
   const loaded = loadFromLocalStorage();
+  loadEmpFromLocalStorage();
 
   renderAll();
   recalculate();
+  renderAllEmp();
+  empRecalculate();
   loadLiveData();
+
+  // Switch to saved mode
+  if (empState.mode === 'empleado') {
+    switchMode('empleado');
+  }
 
   // Refresh data every 5 minutes
   setInterval(loadLiveData, 5 * 60 * 1000);
 });
-

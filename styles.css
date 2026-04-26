@@ -94,6 +94,219 @@ body::before {
   z-index: 0;
 }
 
+/* --- Mode Switcher --- */
+.mode-switcher {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.mode-switcher__btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 1rem;
+  background: var(--bg-card);
+  border: 2px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+}
+
+.mode-switcher__btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--gradient-card-shine);
+  pointer-events: none;
+}
+
+.mode-switcher__btn:hover {
+  border-color: var(--border-accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow-indigo);
+}
+
+.mode-switcher__btn--active {
+  border-color: var(--accent-indigo);
+  background: rgba(99, 102, 241, 0.1);
+  box-shadow: var(--shadow-glow-indigo);
+}
+
+.mode-switcher__icon {
+  font-size: 1.5rem;
+}
+
+.mode-switcher__text {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.mode-switcher__desc {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.mode-switcher__btn--active .mode-switcher__text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* --- Mode Content Toggle --- */
+.mode-content--hidden {
+  display: none !important;
+}
+
+/* --- Employee-specific Styles --- */
+.form-input--big {
+  font-size: 1.8rem;
+  font-weight: 800;
+  padding: 1rem 1rem 1rem 2.8rem;
+  text-align: center;
+  letter-spacing: -0.02em;
+}
+
+.salary-input-hero {
+  position: relative;
+}
+
+.card--salary {
+  border-color: var(--border-success);
+}
+
+.emp-savings-amount {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  margin-top: 0.75rem;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-base);
+}
+
+.emp-savings-amount__icon {
+  font-size: 1rem;
+}
+
+.emp-savings-amount__text {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.emp-savings-amount__text strong {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--accent-emerald);
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
+
+/* --- Employee Alert (Overspending) --- */
+.emp-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  margin-top: 1rem;
+  background: rgba(244, 63, 94, 0.1);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  border-radius: var(--radius-md);
+  animation: alertPulse 2s ease-in-out infinite;
+}
+
+@keyframes alertPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+  50% { box-shadow: 0 0 16px 0 rgba(244, 63, 94, 0.15); }
+}
+
+.emp-alert--hidden {
+  display: none;
+}
+
+.emp-alert__icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.emp-alert__text {
+  font-size: 0.82rem;
+  color: var(--accent-rose);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.emp-alert__text strong {
+  color: var(--accent-rose);
+  font-weight: 800;
+}
+
+.emp-alert__hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* --- Employee Healthy Budget --- */
+.emp-healthy {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  margin-top: 1rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: var(--radius-md);
+}
+
+.emp-healthy--hidden {
+  display: none;
+}
+
+.emp-healthy__icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.emp-healthy__text {
+  font-size: 0.82rem;
+  color: var(--accent-emerald);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.emp-healthy__text strong {
+  color: var(--accent-emerald);
+  font-weight: 800;
+}
+
+/* --- Danger mode for result card --- */
+.result-card--danger {
+  border-color: rgba(244, 63, 94, 0.5) !important;
+  box-shadow: 0 0 20px rgba(244, 63, 94, 0.15) !important;
+}
+
+.result-card--danger .result-hero__value {
+  background: var(--gradient-warm) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
 /* --- Print Summary (hidden on screen) --- */
 .print-summary {
   display: none;

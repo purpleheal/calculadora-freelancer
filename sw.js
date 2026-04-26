@@ -3,7 +3,7 @@
 // Enables offline support and installability
 // =============================================
 
-const CACHE_NAME = 'calcuprecio-v4';
+const CACHE_NAME = 'calcuprecio-v5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

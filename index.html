@@ -25,10 +25,25 @@
       <div class="app-header__icon">💰</div>
       <h1>Calculá tu Precio</h1>
     </div>
-    <p class="app-header__subtitle">Herramienta inteligente para freelancers argentinos — datos en tiempo real</p>
+    <p class="app-header__subtitle">Herramienta inteligente para freelancers y empleados argentinos — datos en tiempo real</p>
   </header>
 
-  <!-- Print-only results summary (hidden on screen, shown at top of PDF) -->
+  <!-- ===== MODE SWITCHER ===== -->
+  <div class="mode-switcher" id="modeSwitcher">
+    <button class="mode-switcher__btn mode-switcher__btn--active" id="btnModeFreelancer" onclick="switchMode('freelancer')">
+      <span class="mode-switcher__icon">🚀</span>
+      <span class="mode-switcher__text">Freelancer</span>
+      <span class="mode-switcher__desc">Calculá tu precio/hora</span>
+    </button>
+    <button class="mode-switcher__btn" id="btnModeEmpleado" onclick="switchMode('empleado')">
+      <span class="mode-switcher__icon">💼</span>
+      <span class="mode-switcher__text">Empleado</span>
+      <span class="mode-switcher__desc">Gestioná tu sueldo</span>
+    </button>
+  </div>
+
+  <!-- ===== FREELANCER MODE ===== -->
+  <div class="mode-content" id="modeFreelancer">  <!-- Print-only results summary (hidden on screen, shown at top of PDF) -->
   <div class="print-summary" id="printSummary">
     <div class="print-summary__row">
       <div class="print-summary__item">
@@ -429,6 +444,172 @@
     </div>
 
   </div>
+
+  </div> <!-- /modeFreelancer -->
+
+  <!-- ===== EMPLOYEE MODE ===== -->
+  <div class="mode-content mode-content--hidden" id="modeEmpleado">
+
+    <div class="app-layout app-layout--empleado">
+
+      <!-- LEFT: Employee Inputs -->
+      <div class="app-inputs">
+
+        <!-- SUELDO NETO -->
+        <div class="card card--salary">
+          <div class="card__header">
+            <span class="card__title"><span class="card__title-icon">💵</span> Tu Sueldo Neto Mensual</span>
+            <span class="card__badge card__badge--live">En mano</span>
+          </div>
+          <div class="salary-input-hero">
+            <div class="form-input-wrapper">
+              <span class="form-input-prefix" style="font-size: 1.2rem; left: 1rem;">$</span>
+              <input type="number" class="form-input form-input--currency form-input--big" id="empSueldo" placeholder="500.000" value="500000">
+            </div>
+          </div>
+        </div>
+
+        <!-- GASTOS FIJOS DEL EMPLEADO -->
+        <div class="card" id="cardEmpGastos">
+          <div class="card__header">
+            <span class="card__title"><span class="card__title-icon">🏠</span> Gastos Fijos</span>
+            <span class="card__badge card__badge--info">Mensual</span>
+          </div>
+          <div class="expense-list" id="listaEmpGastos">
+            <!-- Dynamic items -->
+          </div>
+          <div class="add-expense-row">
+            <input type="text" class="form-input" id="nuevoEmpGastoNombre" placeholder="Ej: Alquiler">
+            <div class="form-input-wrapper">
+              <span class="form-input-prefix">$</span>
+              <input type="number" class="form-input form-input--currency" id="nuevoEmpGastoMonto" placeholder="0">
+            </div>
+            <select class="form-select" id="nuevoEmpGastoCurrency" style="visibility:hidden;">
+              <option value="ARS">ARS</option>
+            </select>
+            <button class="btn-add" onclick="addEmpExpense('gastos')" title="Agregar gasto">+</button>
+          </div>
+        </div>
+
+        <!-- OCIO / ENTRETENIMIENTO -->
+        <div class="card" id="cardEmpOcio">
+          <div class="card__header">
+            <span class="card__title"><span class="card__title-icon">🎮</span> Ocio y Entretenimiento</span>
+            <span class="card__badge card__badge--info">Mensual</span>
+          </div>
+          <div class="expense-list" id="listaEmpOcio">
+            <!-- Dynamic items -->
+          </div>
+          <div class="add-expense-row">
+            <input type="text" class="form-input" id="nuevoEmpOcioNombre" placeholder="Ej: Netflix, Salidas">
+            <div class="form-input-wrapper">
+              <span class="form-input-prefix">$</span>
+              <input type="number" class="form-input form-input--currency" id="nuevoEmpOcioMonto" placeholder="0">
+            </div>
+            <select class="form-select" id="nuevoEmpOcioCurrency" style="visibility:hidden;">
+              <option value="ARS">ARS</option>
+            </select>
+            <button class="btn-add" onclick="addEmpExpense('ocio')" title="Agregar gasto">+</button>
+          </div>
+        </div>
+
+        <!-- CONFIGURACIÓN AHORRO -->
+        <div class="card" id="cardEmpConfig">
+          <div class="card__header">
+            <span class="card__title"><span class="card__title-icon">🎯</span> Meta de Ahorro</span>
+          </div>
+          <div class="form-group">
+            <div class="slider-container">
+              <div class="slider-header">
+                <label class="form-label" style="margin:0">Porcentaje de ahorro</label>
+                <span class="slider-value" id="valEmpAhorro">20%</span>
+              </div>
+              <input type="range" min="0" max="60" value="20" id="sliderEmpAhorro">
+            </div>
+          </div>
+          <div class="emp-savings-amount" id="empSavingsAmount">
+            <span class="emp-savings-amount__icon">🏦</span>
+            <span class="emp-savings-amount__text">Ahorro mensual: <strong id="empAhorroDisplay">$0</strong></span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Employee Results -->
+      <div class="results-panel">
+        <div class="result-card" id="empResultCard">
+
+          <div class="result-hero" id="empResultHero">
+            <div class="result-hero__label">Balance Disponible</div>
+            <div class="result-hero__value" id="empBalance">$0</div>
+            <div class="result-hero__suffix" id="empBalanceStatus">después de gastos y ahorro</div>
+          </div>
+
+          <div class="result-rows">
+            <div class="result-row">
+              <span class="result-row__label">💵 Sueldo neto</span>
+              <span class="result-row__value" id="empResultSueldo">$0</span>
+            </div>
+            <div class="result-row">
+              <span class="result-row__label">🏠 Gastos fijos</span>
+              <span class="result-row__value" id="empResultGastos">$0</span>
+            </div>
+            <div class="result-row">
+              <span class="result-row__label">🎮 Ocio / Entretenimiento</span>
+              <span class="result-row__value" id="empResultOcio">$0</span>
+            </div>
+            <div class="result-row">
+              <span class="result-row__label">🏦 Ahorro (<span id="empAhorroPctLabel">20</span>%)</span>
+              <span class="result-row__value" id="empResultAhorro">$0</span>
+            </div>
+            <div class="result-row" style="border-top: 2px solid var(--border-accent); padding-top: 0.75rem;">
+              <span class="result-row__label"><strong>💰 Sobrante</strong></span>
+              <span class="result-row__value result-row__value--highlight" id="empResultSobrante">$0</span>
+            </div>
+          </div>
+
+          <!-- Alert banner for overspending -->
+          <div class="emp-alert emp-alert--hidden" id="empAlert">
+            <div class="emp-alert__icon">⚠️</div>
+            <div class="emp-alert__text">
+              <strong>¡Cuidado!</strong> Estás gastando <span id="empAlertAmount">$0</span> de más por mes.
+              <br><span class="emp-alert__hint">Revisá tus gastos u ocio para no endeudarte.</span>
+            </div>
+          </div>
+
+          <!-- Healthy budget banner -->
+          <div class="emp-healthy emp-healthy--hidden" id="empHealthy">
+            <div class="emp-healthy__icon">✅</div>
+            <div class="emp-healthy__text">
+              <strong>Presupuesto saludable.</strong> Te sobran <span id="empHealthyAmount">$0</span> extra por mes.
+            </div>
+          </div>
+
+          <!-- Distribution bar -->
+          <div class="tax-breakdown">
+            <div class="tax-breakdown__title">Distribución de tu sueldo</div>
+            <div class="tax-bar" id="empTaxBar">
+              <div class="tax-bar__segment tax-bar__segment--net" style="width: 40%"></div>
+              <div class="tax-bar__segment tax-bar__segment--monotributo" style="width: 20%"></div>
+              <div class="tax-bar__segment tax-bar__segment--iibb" style="width: 20%"></div>
+              <div class="tax-bar__segment tax-bar__segment--unforeseen" style="width: 20%"></div>
+            </div>
+            <div class="tax-legend" id="empTaxLegend">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="actions-bar">
+            <button class="btn btn--primary btn--block" onclick="window.print()">🖨️ Imprimir</button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div> <!-- /modeEmpleado -->
 
 </div>
 
