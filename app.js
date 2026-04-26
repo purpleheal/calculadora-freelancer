@@ -1041,16 +1041,16 @@ const empState = {
   sueldo: 500000,
   pctAhorro: 20,
   gastos: [
-    { name: 'Alquiler / Hipoteca', amount: 200000 },
-    { name: 'Servicios (luz, gas, agua)', amount: 45000 },
-    { name: 'Supermercado', amount: 180000 },
-    { name: 'Transporte', amount: 30000 },
-    { name: 'Salud', amount: 25000 },
+    { name: 'Alquiler / Hipoteca', amount: 200000, currency: 'ARS' },
+    { name: 'Servicios (luz, gas, agua)', amount: 45000, currency: 'ARS' },
+    { name: 'Supermercado', amount: 180000, currency: 'ARS' },
+    { name: 'Transporte', amount: 30000, currency: 'ARS' },
+    { name: 'Salud', amount: 25000, currency: 'ARS' },
   ],
   ocio: [
-    { name: 'Salidas / Restaurantes', amount: 40000 },
-    { name: 'Streaming (Netflix, Spotify)', amount: 12000 },
-    { name: 'Hobbies', amount: 20000 },
+    { name: 'Salidas / Restaurantes', amount: 40000, currency: 'ARS' },
+    { name: 'Streaming (Netflix, Spotify)', amount: 12000, currency: 'ARS' },
+    { name: 'Hobbies', amount: 20000, currency: 'ARS' },
   ],
   amortizacion: [
     { name: 'Notebook', price: 800, currency: 'USD', years: 3 },
@@ -1097,10 +1097,18 @@ function renderEmpExpenseList(listId, items, type) {
     nameSpan.textContent = item.name;
     nameSpan.addEventListener('click', () => startEmpEditName(type, index, nameSpan));
 
+    const displayAmount = (item.currency === 'USD')
+      ? `USD $${item.amount.toLocaleString('es-AR')}`
+      : formatARS(item.amount);
+
+    const arsEquiv = (item.currency === 'USD')
+      ? ` (≈ ${formatARS(toARS(item.amount, 'USD'))})`
+      : '';
+
     const amountSpan = document.createElement('span');
     amountSpan.className = 'expense-item__amount expense-item__editable';
-    amountSpan.title = 'Clic para editar';
-    amountSpan.textContent = formatARS(item.amount);
+    amountSpan.title = arsEquiv || 'Clic para editar';
+    amountSpan.textContent = displayAmount;
     amountSpan.addEventListener('click', () => startEmpEditAmount(type, index, amountSpan));
 
     const removeBtn = document.createElement('button');
@@ -1171,24 +1179,27 @@ function startEmpEditAmount(type, index, spanEl) {
 }
 
 function addEmpExpense(type) {
-  let nameInput, amountInput;
+  let nameInput, amountInput, currencyInput;
 
   if (type === 'gastos') {
     nameInput = document.getElementById('nuevoEmpGastoNombre');
     amountInput = document.getElementById('nuevoEmpGastoMonto');
+    currencyInput = document.getElementById('nuevoEmpGastoCurrency');
   } else {
     nameInput = document.getElementById('nuevoEmpOcioNombre');
     amountInput = document.getElementById('nuevoEmpOcioMonto');
+    currencyInput = document.getElementById('nuevoEmpOcioCurrency');
   }
 
   const name = nameInput.value.trim();
   const amount = parseFloat(amountInput.value);
+  const currency = currencyInput.value || 'ARS';
   if (!name || isNaN(amount) || amount <= 0) return;
 
   if (type === 'gastos') {
-    empState.gastos.push({ name, amount });
+    empState.gastos.push({ name, amount, currency });
   } else {
-    empState.ocio.push({ name, amount });
+    empState.ocio.push({ name, amount, currency });
   }
 
   nameInput.value = '';
@@ -1329,10 +1340,10 @@ function empRecalculate() {
   const ahorro = sueldo * (empState.pctAhorro / 100);
 
   let totalGastos = 0;
-  empState.gastos.forEach(item => { totalGastos += item.amount; });
+  empState.gastos.forEach(item => { totalGastos += toARS(item.amount, item.currency || 'ARS'); });
 
   let totalOcio = 0;
-  empState.ocio.forEach(item => { totalOcio += item.amount; });
+  empState.ocio.forEach(item => { totalOcio += toARS(item.amount, item.currency || 'ARS'); });
 
   let totalAmort = 0;
   empState.amortizacion.forEach(item => {
