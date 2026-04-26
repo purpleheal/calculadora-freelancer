@@ -433,8 +433,7 @@
 
         <!-- Actions -->
         <div class="actions-bar">
-          <button class="btn btn--primary btn--block" onclick="exportCSV()">📥 Exportar CSV</button>
-          <button class="btn btn--ghost" onclick="window.print()">🖨️ Imprimir</button>
+          <button class="btn btn--primary btn--block" onclick="window.print()">🖨️ Imprimir</button>
         </div>
         <div class="actions-bar" style="margin-top: 0.5rem;">
           <button class="btn btn--success btn--block" onclick="exportJSON()">💾 Guardar Backup (.json)</button>
@@ -638,6 +637,10 @@
           <!-- Actions -->
           <div class="actions-bar">
             <button class="btn btn--primary btn--block" onclick="window.print()">🖨️ Imprimir</button>
+          </div>
+          <div class="actions-bar" style="margin-top: 0.5rem;">
+            <button class="btn btn--success btn--block" onclick="exportEmpJSON()">💾 Guardar Backup (.json)</button>
+            <button class="btn btn--ghost" onclick="importEmpJSON()">📂 Cargar Backup</button>
           </div>
 
         </div>

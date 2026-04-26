@@ -1464,6 +1464,116 @@ function bindEmpControls() {
   });
 }
 
+// --- Employee CSV Export ---
+
+function exportEmpCSV() {
+  const dolar = getDolarRate();
+  const lines = [
+    ['Categoría', 'Concepto', 'Monto Original', 'Moneda', 'Equivalente ARS'],
+  ];
+
+  lines.push(['SUELDO', 'Sueldo neto mensual', empState.sueldo, 'ARS', empState.sueldo]);
+  lines.push([]);
+
+  empState.gastos.forEach(item => {
+    lines.push(['Gastos Fijos', item.name, item.amount, item.currency || 'ARS', Math.round(toARS(item.amount, item.currency || 'ARS'))]);
+  });
+
+  empState.ocio.forEach(item => {
+    lines.push(['Ocio / Entretenimiento', item.name, item.amount, item.currency || 'ARS', Math.round(toARS(item.amount, item.currency || 'ARS'))]);
+  });
+
+  empState.amortizacion.forEach(item => {
+    const monthly = toARS(item.price, item.currency) / (item.years * 12);
+    lines.push(['Amortización', item.name, item.price, item.currency, Math.round(monthly) + ' /mes']);
+  });
+
+  lines.push([]);
+  lines.push(['CONFIG', 'Ahorro', empState.pctAhorro + '%']);
+  lines.push(['CONFIG', 'Dólar usado', dolar, state.tipoDolar.toUpperCase()]);
+
+  const balanceEl = document.getElementById('empBalance').textContent;
+  lines.push([]);
+  lines.push(['RESULTADO', 'Balance disponible', balanceEl]);
+
+  const csv = lines.map(row => row.join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `sueldo-empleado-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// --- Employee JSON Export/Import ---
+
+function exportEmpJSON() {
+  const dataToExport = {
+    version: 1,
+    app: 'CalcuPrecio — Modo Empleado',
+    exportedAt: new Date().toISOString(),
+    sueldo: empState.sueldo,
+    pctAhorro: empState.pctAhorro,
+    gastos: empState.gastos,
+    ocio: empState.ocio,
+    amortizacion: empState.amortizacion,
+  };
+
+  const json = JSON.stringify(dataToExport, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `calcuprecio-empleado-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importEmpJSON() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+
+        if (data.version !== 1 || data.sueldo == null) {
+          alert('❌ Archivo no válido. Asegurate de usar un backup de CalcuPrecio (Modo Empleado).');
+          return;
+        }
+
+        empState.sueldo = data.sueldo;
+        empState.pctAhorro = data.pctAhorro ?? 20;
+        empState.gastos = data.gastos || [];
+        empState.ocio = data.ocio || [];
+        empState.amortizacion = data.amortizacion || [];
+
+        // Sync UI
+        document.getElementById('empSueldo').value = empState.sueldo;
+        document.getElementById('sliderEmpAhorro').value = empState.pctAhorro;
+        document.getElementById('valEmpAhorro').textContent = `${empState.pctAhorro}%`;
+
+        renderAllEmp();
+        empRecalculate();
+
+        alert(`✅ Datos importados correctamente!\nBackup del: ${data.exportedAt}`);
+      } catch (err) {
+        alert('❌ Error al leer el archivo: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  });
+  input.click();
+}
+
 // --- Employee Persistence ---
 
 function saveEmpToLocalStorage() {
