@@ -513,6 +513,36 @@
           </div>
         </div>
 
+        <!-- AMORTIZACIÓN DE EQUIPOS -->
+        <div class="card" id="cardEmpAmort">
+          <div class="card__header">
+            <span class="card__title"><span class="card__title-icon">💻</span> Amortización de Equipos</span>
+            <span class="card__badge card__badge--live">Auto USD→ARS</span>
+          </div>
+          <div class="amort-list" id="listaEmpAmort">
+            <!-- Dynamic items -->
+          </div>
+          <div class="add-amort-row">
+            <input type="text" class="form-input" id="nuevoEmpEquipoNombre" placeholder="Ej: Notebook">
+            <div class="form-input-wrapper">
+              <span class="form-input-prefix">$</span>
+              <input type="number" class="form-input form-input--currency" id="nuevoEmpEquipoPrecio" placeholder="Precio">
+            </div>
+            <select class="form-select" id="nuevoEmpEquipoCurrency">
+              <option value="USD">USD</option>
+              <option value="ARS">ARS</option>
+            </select>
+            <select class="form-select" id="nuevoEmpEquipoVida">
+              <option value="1">1 año</option>
+              <option value="2">2 años</option>
+              <option value="3" selected>3 años</option>
+              <option value="4">4 años</option>
+              <option value="5">5 años</option>
+            </select>
+            <button class="btn-add" onclick="addEmpAmortItem()" title="Agregar equipo">+</button>
+          </div>
+        </div>
+
         <!-- CONFIGURACIÓN AHORRO -->
         <div class="card" id="cardEmpConfig">
           <div class="card__header">
@@ -557,6 +587,10 @@
             <div class="result-row">
               <span class="result-row__label">🎮 Ocio / Entretenimiento</span>
               <span class="result-row__value" id="empResultOcio">$0</span>
+            </div>
+            <div class="result-row">
+              <span class="result-row__label">💻 Amortización mensual</span>
+              <span class="result-row__value" id="empResultAmort">$0</span>
             </div>
             <div class="result-row">
               <span class="result-row__label">🏦 Ahorro (<span id="empAhorroPctLabel">20</span>%)</span>

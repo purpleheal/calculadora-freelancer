@@ -1052,6 +1052,9 @@ const empState = {
     { name: 'Streaming (Netflix, Spotify)', amount: 12000 },
     { name: 'Hobbies', amount: 20000 },
   ],
+  amortizacion: [
+    { name: 'Notebook', price: 800, currency: 'USD', years: 3 },
+  ],
 };
 
 function switchMode(mode) {
@@ -1207,6 +1210,116 @@ function removeEmpExpense(type, index) {
 function renderAllEmp() {
   renderEmpExpenseList('listaEmpGastos', empState.gastos, 'gastos');
   renderEmpExpenseList('listaEmpOcio', empState.ocio, 'ocio');
+  renderEmpAmortList();
+}
+
+// --- Employee Amortization ---
+
+function renderEmpAmortList() {
+  const container = document.getElementById('listaEmpAmort');
+  container.innerHTML = '';
+
+  empState.amortizacion.forEach((item, index) => {
+    const el = document.createElement('div');
+    el.className = 'amort-item';
+
+    const priceDisplay = item.currency === 'USD'
+      ? `USD $${item.price}`
+      : formatARS(item.price);
+
+    const monthlyARS = toARS(item.price, item.currency) / (item.years * 12);
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'expense-item__name expense-item__editable';
+    nameSpan.title = 'Clic para editar';
+    nameSpan.textContent = item.name;
+    nameSpan.addEventListener('click', () => startEmpAmortEdit(index, 'name', nameSpan, 'text'));
+
+    const priceSpan = document.createElement('span');
+    priceSpan.className = 'expense-item__amount expense-item__editable';
+    priceSpan.style.fontSize = '0.75rem';
+    priceSpan.title = 'Clic para editar precio';
+    priceSpan.textContent = priceDisplay;
+    priceSpan.addEventListener('click', () => startEmpAmortEdit(index, 'price', priceSpan, 'number'));
+
+    const yearsSpan = document.createElement('span');
+    yearsSpan.className = 'expense-item__editable';
+    yearsSpan.style.cssText = 'font-size: 0.7rem; color: var(--text-muted); cursor: pointer;';
+    yearsSpan.title = 'Clic para editar vida útil';
+    yearsSpan.textContent = `${item.years}a`;
+    yearsSpan.addEventListener('click', () => startEmpAmortEdit(index, 'years', yearsSpan, 'number'));
+
+    const monthlySpan = document.createElement('span');
+    monthlySpan.className = 'amort-item__monthly';
+    monthlySpan.textContent = `${formatARS(monthlyARS)}/m`;
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'expense-item__remove';
+    removeBtn.title = 'Eliminar';
+    removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', () => removeEmpAmort(index));
+
+    el.appendChild(nameSpan);
+    el.appendChild(priceSpan);
+    el.appendChild(yearsSpan);
+    el.appendChild(monthlySpan);
+    el.appendChild(removeBtn);
+
+    container.appendChild(el);
+  });
+}
+
+function startEmpAmortEdit(index, field, spanEl, inputType) {
+  const item = empState.amortizacion[index];
+  if (!item) return;
+
+  const input = document.createElement('input');
+  input.type = inputType || 'text';
+  input.value = item[field];
+  input.className = 'inline-edit inline-edit--number';
+  if (inputType === 'number') input.step = 'any';
+  spanEl.replaceWith(input);
+  input.focus();
+  input.select();
+
+  const commit = () => {
+    const val = inputType === 'number' ? parseFloat(input.value) : input.value.trim();
+    if (inputType === 'number') {
+      if (!isNaN(val) && val > 0) item[field] = val;
+    } else {
+      if (val) item[field] = val;
+    }
+    renderAllEmp();
+    empRecalculate();
+  };
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { input.removeEventListener('blur', commit); commit(); }
+    if (e.key === 'Escape') { input.removeEventListener('blur', commit); renderAllEmp(); empRecalculate(); }
+  });
+}
+
+function addEmpAmortItem() {
+  const name = document.getElementById('nuevoEmpEquipoNombre').value.trim();
+  const price = parseFloat(document.getElementById('nuevoEmpEquipoPrecio').value);
+  const currency = document.getElementById('nuevoEmpEquipoCurrency').value;
+  const years = parseInt(document.getElementById('nuevoEmpEquipoVida').value);
+
+  if (!name || isNaN(price) || price <= 0) return;
+
+  empState.amortizacion.push({ name, price, currency, years });
+
+  document.getElementById('nuevoEmpEquipoNombre').value = '';
+  document.getElementById('nuevoEmpEquipoPrecio').value = '';
+
+  renderAllEmp();
+  empRecalculate();
+}
+
+function removeEmpAmort(index) {
+  empState.amortizacion.splice(index, 1);
+  renderAllEmp();
+  empRecalculate();
 }
 
 // --- Employee Recalculation ---
@@ -1221,13 +1334,19 @@ function empRecalculate() {
   let totalOcio = 0;
   empState.ocio.forEach(item => { totalOcio += item.amount; });
 
-  const totalEgresos = totalGastos + totalOcio + ahorro;
+  let totalAmort = 0;
+  empState.amortizacion.forEach(item => {
+    totalAmort += toARS(item.price, item.currency) / (item.years * 12);
+  });
+
+  const totalEgresos = totalGastos + totalOcio + totalAmort + ahorro;
   const balance = sueldo - totalEgresos;
 
   // Update UI
   document.getElementById('empResultSueldo').textContent = formatARS(sueldo);
   document.getElementById('empResultGastos').textContent = formatARS(totalGastos);
   document.getElementById('empResultOcio').textContent = formatARS(totalOcio);
+  document.getElementById('empResultAmort').textContent = formatARS(totalAmort);
   document.getElementById('empResultAhorro').textContent = formatARS(ahorro);
   document.getElementById('empAhorroPctLabel').textContent = empState.pctAhorro;
   document.getElementById('empAhorroDisplay').textContent = formatARS(ahorro);
@@ -1323,11 +1442,11 @@ function bindEmpControls() {
     empRecalculate();
   });
 
-  // Allow Enter on employee add-expense inputs
-  document.querySelectorAll('#modeEmpleado .add-expense-row input').forEach(input => {
+  // Allow Enter on employee add-expense and add-amort inputs
+  document.querySelectorAll('#modeEmpleado .add-expense-row input, #modeEmpleado .add-amort-row input').forEach(input => {
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
-        const btn = input.closest('.add-expense-row').querySelector('.btn-add');
+        const btn = input.closest('.add-expense-row, .add-amort-row').querySelector('.btn-add');
         if (btn) btn.click();
       }
     });
@@ -1343,6 +1462,7 @@ function saveEmpToLocalStorage() {
       pctAhorro: empState.pctAhorro,
       gastos: empState.gastos,
       ocio: empState.ocio,
+      amortizacion: empState.amortizacion,
       mode: empState.mode,
     }));
   } catch (e) { /* silent */ }
@@ -1357,6 +1477,7 @@ function loadEmpFromLocalStorage() {
     if (data.pctAhorro != null) empState.pctAhorro = data.pctAhorro;
     if (data.gastos) empState.gastos = data.gastos;
     if (data.ocio) empState.ocio = data.ocio;
+    if (data.amortizacion) empState.amortizacion = data.amortizacion;
     if (data.mode) empState.mode = data.mode;
 
     // Sync UI
