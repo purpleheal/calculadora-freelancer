@@ -598,6 +598,15 @@ function recalculate() {
     if (printDate) {
       printDate.textContent = `Calculado el ${new Date().toLocaleDateString('es-AR')} — Dólar ${state.tipoDolar.toUpperCase()}: $${getDolarRate().toLocaleString('es-AR')} — Inflación: ${getInflacionMensual()}% mensual`;
     }
+
+    // Populate Distribution Plan for Print
+    const printDistTaxes = document.getElementById('printDistTaxes');
+    if (printDistTaxes) {
+      printDistTaxes.textContent = formatARS(monoCuota + iibb);
+      document.getElementById('printDistUnforeseen').textContent = formatARS(imprevistos);
+      document.getElementById('printDistOps').textContent = formatARS(totalTrabajo + totalAmort + totalHabitos);
+      document.getElementById('printDistNet').textContent = formatARS(totalPersonal + valorAgregado);
+    }
   }
 
   // Update total hours display
