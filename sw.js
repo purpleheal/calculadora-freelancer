@@ -3,12 +3,12 @@
 // Enables offline support and installability
 // =============================================
 
-const CACHE_NAME = 'calcuprecio-v13';
+const CACHE_NAME = 'calcuprecio-v15';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './styles-v2.css',
-  './app-v2.js',
+  './styles-v3.css',
+  './app-v3.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
