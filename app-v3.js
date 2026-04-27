@@ -28,7 +28,9 @@ const state = {
     { name: 'Servicios (luz, gas, agua)', amount: 65000, currency: 'ARS' },
     { name: 'Transporte', amount: 45000, currency: 'ARS' },
     { name: 'Salud / Gimnasio', amount: 40000, currency: 'ARS' },
-    { name: 'Ocio', amount: 50000, currency: 'ARS' },
+  ],
+  ocio: [
+    { name: 'Ocio (Salidas, hobbies)', amount: 50000, currency: 'ARS' },
   ],
   habitos: [
     { name: 'Café diario', amount: 2500, currency: 'ARS' },
@@ -169,6 +171,7 @@ function getItemsArray(type) {
   if (type === 'trabajo') return state.gastosTrabajo;
   if (type === 'personal') return state.gastosPersonales;
   if (type === 'habitos') return state.habitos;
+  if (type === 'ocio') return state.ocio;
   return [];
 }
 
@@ -265,12 +268,14 @@ function renderExpenseList(listId, items, type) {
     const el = document.createElement('div');
     el.className = 'expense-item';
 
+    const isAnual = item.period === 'anual';
     const displayAmount = item.currency === 'USD'
-      ? `USD $${item.amount.toLocaleString('es-AR')}`
-      : formatARS(item.amount);
+      ? `USD $${item.amount.toLocaleString('es-AR')}${isAnual ? '/año' : ''}`
+      : formatARS(item.amount) + (isAnual ? '/año' : '');
 
-    const arsEquiv = item.currency === 'USD'
-      ? ` (≈ ${formatARS(toARS(item.amount, 'USD'))})`
+    const monthlyAmount = isAnual ? item.amount / 12 : item.amount;
+    const arsEquiv = (item.currency === 'USD' || isAnual)
+      ? ` (≈ ${formatARS(toARS(monthlyAmount, item.currency === 'USD' ? 'USD' : 'ARS'))}/mes)`
       : '';
 
     if (item.autoMono) {
@@ -311,34 +316,45 @@ function renderExpenseList(listId, items, type) {
 }
 
 function addExpense(type) {
-  let nameInput, amountInput, currencyInput;
+  let nameInput, amountInput, currencyInput, periodInput;
 
   if (type === 'trabajo') {
     nameInput = document.getElementById('nuevoGastoTrabajoNombre');
     amountInput = document.getElementById('nuevoGastoTrabajoMonto');
     currencyInput = document.getElementById('nuevoGastoTrabajoCurrency');
+    periodInput = document.getElementById('nuevoGastoTrabajoPeriodo');
   } else if (type === 'personal') {
     nameInput = document.getElementById('nuevoGastoPersonalNombre');
     amountInput = document.getElementById('nuevoGastoPersonalMonto');
     currencyInput = document.getElementById('nuevoGastoPersonalCurrency');
+    periodInput = document.getElementById('nuevoGastoPersonalPeriodo');
   } else if (type === 'habitos') {
     nameInput = document.getElementById('nuevoHabitoNombre');
     amountInput = document.getElementById('nuevoHabitoMonto');
     currencyInput = { value: 'ARS' };
+    periodInput = { value: 'mensual' };
+  } else if (type === 'ocio') {
+    nameInput = document.getElementById('nuevoOcioFreelancerNombre');
+    amountInput = document.getElementById('nuevoOcioFreelancerMonto');
+    currencyInput = document.getElementById('nuevoOcioFreelancerCurrency');
+    periodInput = document.getElementById('nuevoOcioFreelancerPeriodo');
   }
 
   const name = nameInput.value.trim();
   const amount = parseFloat(amountInput.value);
   const currency = currencyInput.value || 'ARS';
+  const period = periodInput ? (periodInput.value || 'mensual') : 'mensual';
 
   if (!name || isNaN(amount) || amount <= 0) return;
 
-  const item = { name, amount, currency };
+  const item = { name, amount, currency, period };
 
   if (type === 'trabajo') {
     state.gastosTrabajo.push(item);
   } else if (type === 'personal') {
     state.gastosPersonales.push(item);
+  } else if (type === 'ocio') {
+    state.ocio.push(item);
   } else {
     state.habitos.push(item);
   }
@@ -355,6 +371,8 @@ function removeExpense(type, index) {
     state.gastosTrabajo.splice(index, 1);
   } else if (type === 'personal') {
     state.gastosPersonales.splice(index, 1);
+  } else if (type === 'ocio') {
+    state.ocio.splice(index, 1);
   } else {
     state.habitos.splice(index, 1);
   }
@@ -455,20 +473,29 @@ function recalculate() {
   let totalTrabajo = 0;
   state.gastosTrabajo.forEach(item => {
     if (!item.autoMono) {
-      totalTrabajo += toARS(item.amount, item.currency);
+      const itemAmount = item.period === 'anual' ? item.amount / 12 : item.amount;
+      totalTrabajo += toARS(itemAmount, item.currency);
     }
   });
 
   // 2. Sum personal expenses
   let totalPersonal = 0;
   state.gastosPersonales.forEach(item => {
-    totalPersonal += toARS(item.amount, item.currency);
+    const itemAmount = item.period === 'anual' ? item.amount / 12 : item.amount;
+    totalPersonal += toARS(itemAmount, item.currency);
   });
 
   // 3. Habits (daily * workdays)
   let totalHabitos = 0;
   state.habitos.forEach(item => {
     totalHabitos += item.amount * state.diasMes;
+  });
+
+  // Ocio
+  let totalOcio = 0;
+  state.ocio.forEach(item => {
+    const itemAmount = item.period === 'anual' ? item.amount / 12 : item.amount;
+    totalOcio += toARS(itemAmount, item.currency);
   });
 
   // 4. Amortization
@@ -478,7 +505,7 @@ function recalculate() {
   });
 
   // 5. Subtotal
-  const subtotal = totalTrabajo + totalPersonal + totalHabitos + totalAmort;
+  const subtotal = totalTrabajo + totalPersonal + totalHabitos + totalAmort + totalOcio;
 
   // 6. Imprevistos
   const imprevistos = subtotal * (state.pctImprevistos / 100);
@@ -509,7 +536,8 @@ function recalculate() {
     totalTrabajo = 0;
     state.gastosTrabajo.forEach(item => {
       if (!item.autoMono) {
-        totalTrabajo += toARS(item.amount, item.currency);
+        const itemAmount = item.period === 'anual' ? item.amount / 12 : item.amount;
+        totalTrabajo += toARS(itemAmount, item.currency);
       }
     });
   }
@@ -528,6 +556,7 @@ function recalculate() {
   // ---- UPDATE UI ----
   document.getElementById('resultGastosTrabajo').textContent = formatARS(totalTrabajo);
   document.getElementById('resultGastosPersonales').textContent = formatARS(totalPersonal);
+  document.getElementById('resultOcioFreelancer').textContent = formatARS(totalOcio);
   document.getElementById('resultHabitos').textContent = formatARS(totalHabitos);
   document.getElementById('resultAmortizacion').textContent = formatARS(totalAmort);
   document.getElementById('resultSubtotal').textContent = formatARS(subtotal);
@@ -604,7 +633,7 @@ function recalculate() {
     if (printDistTaxes) {
       printDistTaxes.textContent = formatARS(monoCuota + iibb);
       document.getElementById('printDistUnforeseen').textContent = formatARS(imprevistos);
-      document.getElementById('printDistOps').textContent = formatARS(totalTrabajo + totalAmort + totalHabitos + totalPersonal);
+      document.getElementById('printDistOps').textContent = formatARS(totalTrabajo + totalAmort + totalHabitos + totalPersonal + totalOcio);
       document.getElementById('printDistNet').textContent = formatARS(valorAgregado);
     }
   }
@@ -679,6 +708,7 @@ function renderProjectionChart(basePrecioHora) {
 function renderAll() {
   renderExpenseList('listaGastosTrabajo', state.gastosTrabajo, 'trabajo');
   renderExpenseList('listaGastosPersonales', state.gastosPersonales, 'personal');
+  renderExpenseList('listaOcioFreelancer', state.ocio, 'ocio');
   renderExpenseList('listaHabitos', state.habitos, 'habitos');
   renderAmortList();
 }
@@ -820,12 +850,22 @@ function exportCSV() {
 
   state.gastosTrabajo.forEach(item => {
     if (!item.autoMono) {
-      lines.push(['Gastos de Trabajo', item.name, item.amount, item.currency, Math.round(toARS(item.amount, item.currency))]);
+      const isAnual = item.period === 'anual';
+      const monthlyAmount = isAnual ? item.amount / 12 : item.amount;
+      lines.push(['Gastos de Trabajo', item.name + (isAnual ? ' (Anual)' : ''), item.amount + (isAnual ? '/año' : ''), item.currency, Math.round(toARS(monthlyAmount, item.currency)) + '/mes']);
     }
   });
 
   state.gastosPersonales.forEach(item => {
-    lines.push(['Gastos Personales', item.name, item.amount, item.currency, Math.round(toARS(item.amount, item.currency))]);
+    const isAnual = item.period === 'anual';
+    const monthlyAmount = isAnual ? item.amount / 12 : item.amount;
+    lines.push(['Gastos Personales', item.name + (isAnual ? ' (Anual)' : ''), item.amount + (isAnual ? '/año' : ''), item.currency, Math.round(toARS(monthlyAmount, item.currency)) + '/mes']);
+  });
+
+  state.ocio.forEach(item => {
+    const isAnual = item.period === 'anual';
+    const monthlyAmount = isAnual ? item.amount / 12 : item.amount;
+    lines.push(['Ocio / Entretenimiento', item.name + (isAnual ? ' (Anual)' : ''), item.amount + (isAnual ? '/año' : ''), item.currency, Math.round(toARS(monthlyAmount, item.currency)) + '/mes']);
   });
 
   state.habitos.forEach(item => {
@@ -872,6 +912,7 @@ function saveToLocalStorage() {
   const dataToSave = {
     gastosTrabajo: state.gastosTrabajo,
     gastosPersonales: state.gastosPersonales,
+    ocio: state.ocio,
     habitos: state.habitos,
     amortizacion: state.amortizacion,
     horasDia: state.horasDia,
@@ -897,6 +938,8 @@ function loadFromLocalStorage() {
 
     if (data.gastosTrabajo) state.gastosTrabajo = data.gastosTrabajo;
     if (data.gastosPersonales) state.gastosPersonales = data.gastosPersonales;
+    if (data.ocio) state.ocio = data.ocio;
+    else if (!data.ocio) state.ocio = []; // For older backups
     if (data.habitos) state.habitos = data.habitos;
     if (data.amortizacion) state.amortizacion = data.amortizacion;
     if (data.horasDia != null) state.horasDia = data.horasDia;
@@ -948,6 +991,7 @@ function exportJSON() {
     exportedAt: new Date().toISOString(),
     gastosTrabajo: state.gastosTrabajo,
     gastosPersonales: state.gastosPersonales,
+    ocio: state.ocio,
     habitos: state.habitos,
     amortizacion: state.amortizacion,
     config: {
@@ -991,6 +1035,7 @@ function importJSON() {
 
         state.gastosTrabajo = data.gastosTrabajo;
         state.gastosPersonales = data.gastosPersonales;
+        state.ocio = data.ocio || [];
         state.habitos = data.habitos;
         state.amortizacion = data.amortizacion;
 
@@ -1042,6 +1087,7 @@ function clearFreelancerData() {
   // Clear all arrays (keep only monotributo auto-item)
   state.gastosTrabajo = state.gastosTrabajo.filter(item => item.autoMono);
   state.gastosPersonales = [];
+  state.ocio = [];
   state.habitos = [];
   state.amortizacion = [];
 
@@ -1149,12 +1195,14 @@ function renderEmpExpenseList(listId, items, type) {
     nameSpan.textContent = item.name;
     nameSpan.addEventListener('click', () => startEmpEditName(type, index, nameSpan));
 
+    const isAnual = item.period === 'anual';
     const displayAmount = (item.currency === 'USD')
-      ? `USD $${item.amount.toLocaleString('es-AR')}`
-      : formatARS(item.amount);
+      ? `USD $${item.amount.toLocaleString('es-AR')}${isAnual ? '/año' : ''}`
+      : formatARS(item.amount) + (isAnual ? '/año' : '');
 
-    const arsEquiv = (item.currency === 'USD')
-      ? ` (≈ ${formatARS(toARS(item.amount, 'USD'))})`
+    const monthlyAmount = isAnual ? item.amount / 12 : item.amount;
+    const arsEquiv = (item.currency === 'USD' || isAnual)
+      ? ` (≈ ${formatARS(toARS(monthlyAmount, item.currency === 'USD' ? 'USD' : 'ARS'))}/mes)`
       : '';
 
     const amountSpan = document.createElement('span');
@@ -1231,27 +1279,30 @@ function startEmpEditAmount(type, index, spanEl) {
 }
 
 function addEmpExpense(type) {
-  let nameInput, amountInput, currencyInput;
+  let nameInput, amountInput, currencyInput, periodInput;
 
   if (type === 'gastos') {
     nameInput = document.getElementById('nuevoEmpGastoNombre');
     amountInput = document.getElementById('nuevoEmpGastoMonto');
     currencyInput = document.getElementById('nuevoEmpGastoCurrency');
+    periodInput = document.getElementById('nuevoEmpGastoPeriodo');
   } else {
     nameInput = document.getElementById('nuevoEmpOcioNombre');
     amountInput = document.getElementById('nuevoEmpOcioMonto');
     currencyInput = document.getElementById('nuevoEmpOcioCurrency');
+    periodInput = document.getElementById('nuevoEmpOcioPeriodo');
   }
 
   const name = nameInput.value.trim();
   const amount = parseFloat(amountInput.value);
   const currency = currencyInput.value || 'ARS';
+  const period = periodInput ? (periodInput.value || 'mensual') : 'mensual';
   if (!name || isNaN(amount) || amount <= 0) return;
 
   if (type === 'gastos') {
-    empState.gastos.push({ name, amount, currency });
+    empState.gastos.push({ name, amount, currency, period });
   } else {
-    empState.ocio.push({ name, amount, currency });
+    empState.ocio.push({ name, amount, currency, period });
   }
 
   nameInput.value = '';
@@ -1392,10 +1443,16 @@ function empRecalculate() {
   const ahorro = sueldo * (empState.pctAhorro / 100);
 
   let totalGastos = 0;
-  empState.gastos.forEach(item => { totalGastos += toARS(item.amount, item.currency || 'ARS'); });
+  empState.gastos.forEach(item => {
+    const itemAmount = item.period === 'anual' ? item.amount / 12 : item.amount;
+    totalGastos += toARS(itemAmount, item.currency || 'ARS');
+  });
 
   let totalOcio = 0;
-  empState.ocio.forEach(item => { totalOcio += toARS(item.amount, item.currency || 'ARS'); });
+  empState.ocio.forEach(item => {
+    const itemAmount = item.period === 'anual' ? item.amount / 12 : item.amount;
+    totalOcio += toARS(itemAmount, item.currency || 'ARS');
+  });
 
   let totalAmort = 0;
   empState.amortizacion.forEach(item => {
@@ -1555,11 +1612,15 @@ function exportEmpCSV() {
   lines.push([]);
 
   empState.gastos.forEach(item => {
-    lines.push(['Gastos Fijos', item.name, item.amount, item.currency || 'ARS', Math.round(toARS(item.amount, item.currency || 'ARS'))]);
+    const isAnual = item.period === 'anual';
+    const monthlyAmount = isAnual ? item.amount / 12 : item.amount;
+    lines.push(['Gastos Fijos', item.name + (isAnual ? ' (Anual)' : ''), item.amount + (isAnual ? '/año' : ''), item.currency || 'ARS', Math.round(toARS(monthlyAmount, item.currency || 'ARS')) + '/mes']);
   });
 
   empState.ocio.forEach(item => {
-    lines.push(['Ocio / Entretenimiento', item.name, item.amount, item.currency || 'ARS', Math.round(toARS(item.amount, item.currency || 'ARS'))]);
+    const isAnual = item.period === 'anual';
+    const monthlyAmount = isAnual ? item.amount / 12 : item.amount;
+    lines.push(['Ocio / Entretenimiento', item.name + (isAnual ? ' (Anual)' : ''), item.amount + (isAnual ? '/año' : ''), item.currency || 'ARS', Math.round(toARS(monthlyAmount, item.currency || 'ARS')) + '/mes']);
   });
 
   empState.amortizacion.forEach(item => {

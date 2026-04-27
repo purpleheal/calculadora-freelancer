@@ -746,7 +746,7 @@ body::before {
 
 .add-expense-row {
   display: grid;
-  grid-template-columns: 1fr 100px auto 36px;
+  grid-template-columns: 1fr 100px auto auto 36px;
   gap: 0.5rem;
   align-items: center;
   margin-top: 0.5rem;

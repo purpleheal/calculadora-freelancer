@@ -154,6 +154,10 @@
             <option value="ARS">ARS</option>
             <option value="USD">USD</option>
           </select>
+          <select class="form-select" id="nuevoGastoTrabajoPeriodo">
+            <option value="mensual">/mes</option>
+            <option value="anual">/año</option>
+          </select>
           <button class="btn-add" onclick="addExpense('trabajo')" title="Agregar gasto">+</button>
         </div>
       </div>
@@ -177,10 +181,39 @@
             <option value="ARS">ARS</option>
             <option value="USD">USD</option>
           </select>
+          <select class="form-select" id="nuevoGastoPersonalPeriodo">
+            <option value="mensual">/mes</option>
+            <option value="anual">/año</option>
+          </select>
           <button class="btn-add" onclick="addExpense('personal')" title="Agregar gasto">+</button>
         </div>
       </div>
-
+      <!-- OCIO / ENTRETENIMIENTO (Freelancer) -->
+      <div class="card" id="cardOcioFreelancer">
+        <div class="card__header">
+          <span class="card__title"><span class="card__title-icon">🎮</span> Ocio y Entretenimiento</span>
+          <span class="card__badge card__badge--info">Mensual</span>
+        </div>
+        <div class="expense-list" id="listaOcioFreelancer">
+          <!-- Dynamic items -->
+        </div>
+        <div class="add-expense-row">
+          <input type="text" class="form-input" id="nuevoOcioFreelancerNombre" placeholder="Ej: Netflix, Salidas">
+          <div class="form-input-wrapper">
+            <span class="form-input-prefix">$</span>
+            <input type="number" class="form-input form-input--currency" id="nuevoOcioFreelancerMonto" placeholder="0">
+          </div>
+          <select class="form-select" id="nuevoOcioFreelancerCurrency">
+            <option value="ARS">ARS</option>
+            <option value="USD">USD</option>
+          </select>
+          <select class="form-select" id="nuevoOcioFreelancerPeriodo">
+            <option value="mensual">/mes</option>
+            <option value="anual">/año</option>
+          </select>
+          <button class="btn-add" onclick="addExpense('ocio')" title="Agregar gasto">+</button>
+        </div>
+      </div>
       <!-- HÁBITOS DIARIOS -->
       <div class="card" id="cardHabitos">
         <div class="card__header">
@@ -198,6 +231,9 @@
           </div>
           <select class="form-select" id="nuevoHabitoCurrency" style="visibility:hidden;">
             <option value="ARS">ARS</option>
+          </select>
+          <select class="form-select" id="nuevoHabitoPeriodo" style="visibility:hidden;">
+            <option value="mensual">/mes</option>
           </select>
           <button class="btn-add" onclick="addExpense('habitos')" title="Agregar hábito">+</button>
         </div>
@@ -369,6 +405,10 @@
             <span class="result-row__value" id="resultGastosPersonales">$0</span>
           </div>
           <div class="result-row">
+            <span class="result-row__label">🎮 Ocio / Entretenimiento</span>
+            <span class="result-row__value" id="resultOcioFreelancer">$0</span>
+          </div>
+          <div class="result-row">
             <span class="result-row__label">☕ Hábitos diarios</span>
             <span class="result-row__value" id="resultHabitos">$0</span>
           </div>
@@ -535,6 +575,10 @@
               <option value="ARS">ARS</option>
               <option value="USD">USD</option>
             </select>
+            <select class="form-select" id="nuevoEmpGastoPeriodo">
+              <option value="mensual">/mes</option>
+              <option value="anual">/año</option>
+            </select>
             <button class="btn-add" onclick="addEmpExpense('gastos')" title="Agregar gasto">+</button>
           </div>
         </div>
@@ -557,6 +601,10 @@
             <select class="form-select" id="nuevoEmpOcioCurrency">
               <option value="ARS">ARS</option>
               <option value="USD">USD</option>
+            </select>
+            <select class="form-select" id="nuevoEmpOcioPeriodo">
+              <option value="mensual">/mes</option>
+              <option value="anual">/año</option>
             </select>
             <button class="btn-add" onclick="addEmpExpense('ocio')" title="Agregar gasto">+</button>
           </div>
